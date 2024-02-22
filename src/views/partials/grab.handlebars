@@ -1,0 +1,7 @@
+{{#each entry.episodes}}
+  <episode>Grabbed S{{this.seasonNumber}} E{{this.episodeNumber}} - {{this.title}}</episode>
+{{/each}}
+<release>
+<entry><span class="label">Title</span>: {{entry.release.releaseTitle}} ({{toHumanSize entry.release.size}})</entry>
+<entry><span class="label">Quality</span>: {{entry.release.quality}}</entry>
+</release>

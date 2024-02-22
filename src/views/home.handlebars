@@ -1,0 +1,24 @@
+<div class="container">
+  <div class="centreColumn">
+  <heading >Activity history for {{instanceName}} (<a href="{{sonarrBaseUrl}}">{{sonarrBaseUrl}}</a>)</heading>
+    <div class="records">
+      <header>
+        <count>Records {{start}}-{{end}} of {{total}}</count>
+        <pagesize>Show <select onChange="location.href=`{{startUrl start}}/${this.value}{{ascendingQuery ascending}}`;">
+          {{#each countOptions}}
+          <option {{selectedIf ../count this}} value="{{this}}">{{this}}</option>
+          {{/each}}
+        </select> per page </pagesize>
+        <sort> <select onChange="location.href=`{{defaultSortedUrl start count}}?sort=${this.value}`;">
+          <option value="descending" {{selectedIf ascending false}}>Newest First</option>
+          <option value="ascending" {{selectedIf ascending true}}>Oldest First</option>
+        </select></sort> 
+      </header>
+      {{> navigation}}
+      {{#each records}}
+        {{> record this}}
+      {{/each}}
+      {{> navigation}}
+    </div>
+  </div>
+</div>

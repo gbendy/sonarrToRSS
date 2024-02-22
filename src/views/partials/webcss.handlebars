@@ -1,0 +1,152 @@
+body {
+  font-family: "Roboto", "open sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif
+}
+
+.container {
+  display:flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+.centreColumn {
+  width: 90%;
+  align-self: center;
+}
+
+heading {
+  font-weight: bold;
+  font-size: 1.3em;
+}
+
+.records {
+  display: flex;
+  flex-direction: column;
+}
+
+.records header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+}
+
+.records header>count{
+  flex-grow: 1;
+  font-size: 1.2em;
+  font-weight: bold;  
+  width:100%;
+  margin-top: 16px;
+}
+
+.records header>sort {
+  margin-left: 4px;
+}
+
+.records header>pagesize {
+   white-space: nowrap;
+   margin-left: 4px;  
+}
+
+nav {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+}
+
+nav prev {
+   
+}
+
+nav fill {
+  flex-grow: 1;
+  justify-content: center;
+  display: flex;
+}
+
+nav next {
+   
+}
+
+.record {
+  display: flex;
+  flex-direction: row;
+  
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+  width: 100%;
+  padding-bottom: 4px;
+  padding-right: 4px;
+  left: 0px;
+}
+
+.record left {
+  display: flex;
+  margin: 0;
+  padding-top: 0px;
+  
+  flex-direction: column;
+  padding-left: 20px;
+}
+
+.record data {
+  display: flex;
+  flex: 1;
+  margin: 0;
+  padding-top: 0px;
+  
+  flex-direction: column;
+  padding-left: 20px;
+}
+
+.record series {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.record entry {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.record event {
+  font-weight: bold;
+  padding-top: 0px;
+}
+
+.record episode {
+  font-weight: bold;
+  padding-top: 0px;
+}
+
+.record release {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8em;
+  padding-top: 4px;
+}
+
+.record release entry {
+  display: block;
+}
+
+.record release entry .label {
+  font-weight: bold;
+}
+
+.record time {
+  font-size: 0.8em;
+  bottom: 0px;
+}
+
+
+.record p {
+  flex: 1;
+  /* make p grow to fill available space*/
+  line-height: 1.4;
+}
+
+img  {
+  width: 100%;
+  height: auto;
+}

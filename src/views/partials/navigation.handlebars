@@ -1,0 +1,9 @@
+<nav>
+  {{#unless first}}
+    <prev><a href="{{prevUrl start count ascending}}">⏮ {{prevCount}}</a></prev>
+  {{/unless}}
+  <fill></fill>
+  {{#unless last}}
+  <next><a href="{{nextUrl start count ascending}}">⏭ {{nextCount}}</a></next>
+  {{/unless}}
+</nav>
