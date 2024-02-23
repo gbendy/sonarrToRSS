@@ -1,9 +1,9 @@
 <div class="container">
   <div class="centreColumn">
   <heading >Activity history for {{instanceName}} (<a href="{{sonarrBaseUrl}}">{{sonarrBaseUrl}}</a>)</heading>
-    <div class="records">
+    <events>
       <header>
-        <count>Records {{start}}-{{end}} of {{total}}</count>
+        <count>Events {{start}}-{{end}} of {{total}}</count>
         <pagesize>Show <select onChange="location.href=`{{startUrl start}}/${this.value}{{ascendingQuery ascending}}`;">
           {{#each countOptions}}
           <option {{selectedIf ../count this}} value="{{this}}">{{this}}</option>
@@ -15,10 +15,10 @@
         </select></sort> 
       </header>
       {{> navigation}}
-      {{#each records}}
-        {{> record this}}
+      {{#each events}}
+        {{> event this}}
       {{/each}}
       {{> navigation}}
-    </div>
+    </events>
   </div>
 </div>

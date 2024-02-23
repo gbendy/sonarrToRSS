@@ -1,20 +1,20 @@
-{{#each entry.episodes}}
+{{#each event.episodes}}
   <episode>Downloaded S{{this.seasonNumber}} E{{this.episodeNumber}} - {{this.title}}</episode>
 {{/each}}
 <release>
-<entry><span class="label">Title</span>: {{entry.release.releaseTitle}}</entry>
-<entry><span class="label">File</span>: {{entry.episodeFile.relativePath}} ({{toHumanSize entry.episodeFile.size}})</entry>
-<entry><span class="label">Quality</span>: {{entry.episodeFile.quality}}</entry>
-<entry><span class="label">Codec</span>: {{entry.episodeFile.mediaInfo.videoCodec}}/{{entry.episodeFile.mediaInfo.audioCodec}} ({{entry.episodeFile.mediaInfo.audioChannels}})</entry>
+<entry><span class="label">Title</span>: {{event.release.releaseTitle}}</entry>
+<entry><span class="label">File</span>: {{event.episodeFile.relativePath}} ({{toHumanSize event.episodeFile.size}})</entry>
+<entry><span class="label">Quality</span>: {{event.episodeFile.quality}}</entry>
+<entry><span class="label">Codec</span>: {{event.episodeFile.mediaInfo.videoCodec}}/{{event.episodeFile.mediaInfo.audioCodec}} ({{event.episodeFile.mediaInfo.audioChannels}})</entry>
 <entry><span class="label">Subtitles</span>:
-{{#each entry.episodeFile.mediaInfo.subtitles}}
+{{#each event.episodeFile.mediaInfo.subtitles}}
   {{this}}
   {{#unless @last}}
   ,
   {{/unless}}
 {{/each}}
 </entry>
-{{#if entry.episodeFile.isUpgrade}}
+{{#if event.episodeFile.isUpgrade}}
 <entry><span class="label">Upgrade</span></entry>
 {{/if}}
 </release>

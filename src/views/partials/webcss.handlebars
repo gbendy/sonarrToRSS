@@ -19,18 +19,18 @@ heading {
   font-size: 1.3em;
 }
 
-.records {
+events {
   display: flex;
   flex-direction: column;
 }
 
-.records header {
+events header {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
 }
 
-.records header>count{
+events header>count{
   flex-grow: 1;
   font-size: 1.2em;
   font-weight: bold;  
@@ -38,11 +38,11 @@ heading {
   margin-top: 16px;
 }
 
-.records header>sort {
+events header>sort {
   margin-left: 4px;
 }
 
-.records header>pagesize {
+events header>pagesize {
    white-space: nowrap;
    margin-left: 4px;  
 }
@@ -67,7 +67,7 @@ nav next {
    
 }
 
-.record {
+event {
   display: flex;
   flex-direction: row;
   
@@ -79,7 +79,7 @@ nav next {
   left: 0px;
 }
 
-.record left {
+event left {
   display: flex;
   margin: 0;
   padding-top: 0px;
@@ -88,7 +88,7 @@ nav next {
   padding-left: 20px;
 }
 
-.record data {
+event data {
   display: flex;
   flex: 1;
   margin: 0;
@@ -98,55 +98,43 @@ nav next {
   padding-left: 20px;
 }
 
-.record series {
+event series {
   font-weight: bold;
   font-size: 1.2em;
 }
 
-.record entry {
+event detail {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
 
-.record event {
+event episode {
   font-weight: bold;
   padding-top: 0px;
 }
 
-.record episode {
-  font-weight: bold;
-  padding-top: 0px;
-}
-
-.record release {
+event release {
   display: flex;
   flex-direction: column;
   font-size: 0.8em;
   padding-top: 4px;
 }
 
-.record release entry {
+event release entry {
   display: block;
 }
 
-.record release entry .label {
+event release entry .label {
   font-weight: bold;
 }
 
-.record time {
+event time {
   font-size: 0.8em;
   bottom: 0px;
 }
 
-
-.record p {
-  flex: 1;
-  /* make p grow to fill available space*/
-  line-height: 1.4;
-}
-
-img  {
+img {
   width: 100%;
   height: auto;
 }

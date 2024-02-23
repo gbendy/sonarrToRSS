@@ -9,13 +9,13 @@ export interface Config {
   historyFile: string;
 }
 
-export interface Entry {
+export interface Event {
   id: string;
   timestamp: number;
-  entry: WebHookPayload;
+  event: WebHookPayload;
 }
 
-export type History = Array<Entry>;
+export type History = Array<Event>;
 
 export type ImageCache = {
   image?: Buffer;

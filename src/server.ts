@@ -1,4 +1,4 @@
-import { Context, ImageCache, SeriesResourceExt } from './types';
+import { Context, Event, ImageCache, SeriesResourceExt } from './types';
 import { engine } from 'express-handlebars';
 import crypto from 'node:crypto';
 import { writeFileSync } from 'node:fs';
@@ -10,13 +10,12 @@ import { WebHookPayload } from './sonarrApiV3';
  * Defaults to defaultvalue if parsing fails
  */
 function parseInteger(str: string, defaultValue: number): number
-function parseInteger(str: string, defaultValue: undefined): undefined
+function parseInteger(str: string, defaultValue: undefined): number | undefined
 function parseInteger(str: string, defaultValue: number|undefined)
 {
   const value = Number.parseInt(str);
   return Number.isNaN(value) ? defaultValue : value; 
 }
-
 
 function sendBuffer(buffer: Buffer, contentType: string|undefined, res: Response) {
   res.statusCode = 200;
@@ -69,11 +68,10 @@ function getBanner(context: Context, seriesId: number, res: Response) {
   getSeriesImage(context, series, 'banner.jpg', res);
 }
 
-
-const eventTypeNames: Record<string, string> = {
-  SeriesAdd: 'Series added',
-  Grab: 'Episode grabbed',
-  Download: 'Episode downloaded'
+const eventTypePartials: Record<string, string> = {
+  SeriesAdd: 'seriesAdd',
+  Grab: 'grab',
+  Download: 'download'
 };
 
 const helpers = {
@@ -81,17 +79,8 @@ const helpers = {
     const d = new Date(date);
     return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
   },
-  eventType: (eventType: string) => {
-    return eventTypeNames[eventType] ?? eventType;  
-  },
-  isSeriesAdded: (entry: WebHookPayload) => {
-    return entry.eventType === 'SeriesAdd';
-  },
-  isGrab: (entry: WebHookPayload) => {
-    return entry.eventType === 'Grab';
-  },
-  isDownload: (entry: WebHookPayload) => {
-    return entry.eventType === 'Download';
+  eventPartial: (event: WebHookPayload) => {
+    return eventTypePartials[event.eventType] ?? 'defaultType';
   },
   toHumanSize: (value: number) => {
     const i = Math.floor(Math.log(value) / Math.log(1024));
@@ -156,13 +145,13 @@ export async function start(context: Context) {
     const first = ascending ?
       start :
       Math.max(context.history.length - start - count, 0);
-    const records = context.history.slice(first, first + count);
+    const events = context.history.slice(first, first + count);
     if (!ascending) {
-      records.reverse();
+      events.reverse();
     }
-    const seriesIds = records.reduce((store, e) => {
-      if (e.entry.series?.id && !context.seriesData.has(e.entry.series?.id)) {
-        store.add(e.entry.series.id);
+    const seriesIds = events.reduce((store, e) => {
+      if (e.event.series?.id && !context.seriesData.has(e.event.series?.id)) {
+        store.add(e.event.series.id);
       }
       return store;
     }, new Set<number>()) as Set<number>;
@@ -184,12 +173,12 @@ export async function start(context: Context) {
     const finalCount = end - start;
     res.render('home', {
       instanceName: context.hostConfig?.instanceName ?? 'Sonarr',
-      records,
+      events,
       ascending,
       start: start+1,
       end: end + 1,
       count: count,
-      recordCount: finalCount,
+      eventCount: finalCount,
       first: start === 0,
       last: end + 1 === context.history.length,
       prevCount: Math.min(start, count),
@@ -206,13 +195,13 @@ export async function start(context: Context) {
   app.post('/sonarr', (req: Request, res: Response) => {
     const timestamp = Date.now();
     const id = crypto.randomBytes(12).toString("hex");
-    const record = {
+    const event: Event = {
       timestamp,
       id,
-      entry: req.body
+      event: req.body
     };
-    context.history.push(record);
-    console.log(`New activity: ${record.entry.eventType}`);
+    context.history.push(event);
+    console.log(`New activity: ${event.event.eventType}`);
     res.status(200);
     res.end('ok');
 

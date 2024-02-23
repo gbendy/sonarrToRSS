@@ -1,0 +1,12 @@
+<event>
+  <left>
+    <series>{{event.series.title}}</series>
+    <img src="/banner/{{event.series.id}}">
+  </left>
+  <data>
+    <detail>
+    {{> (eventPartial event) this}}
+    </detail>
+    <time>{{dateTime timestamp}}</time>
+  </data>
+</event>
