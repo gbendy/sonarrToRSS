@@ -1,5 +1,5 @@
 import { HostConfigResource, getApi } from './sonarrApiV3';
-import { Context, SeriesResourceExt } from './types';
+import { Context, Events, SeriesResourceExt } from './types';
 import { start } from './server';
 import { readFile } from 'node:fs/promises';
 
@@ -27,6 +27,12 @@ async function loadConfig(): Promise<Context> {
 function loadHistory(context: Context): Promise<Context> {
   return readFile(context.config.historyFile,  { encoding: 'utf8' }).then(historyJson => {
     context.history = JSON.parse(historyJson);
+    context.events = context.history.reduce((events, event, index) => {
+      event.index = index;
+      events[event.id] = event;
+      return events;
+    }, {} as Events);
+
     return context;
   }).catch(()=>{
     context.history = [];

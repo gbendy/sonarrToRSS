@@ -1,4 +1,9 @@
-<event>
+<event
+{{#if canClickEvents}}
+  onClick="location.href='/event/{{id}}';"
+  class="pointer"
+{{/if}}
+>
   <left>
     <series>{{event.series.title}}</series>
     <img src="/banner/{{event.series.id}}">

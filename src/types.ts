@@ -12,10 +12,12 @@ export interface Config {
 export interface Event {
   id: string;
   timestamp: number;
+  index: number;
   event: WebHookPayload;
 }
 
 export type History = Array<Event>;
+export type Events = Record<string, Event>;
 
 export type ImageCache = {
   image?: Buffer;
@@ -33,5 +35,6 @@ export interface Context {
   hostConfig: HostConfigResource;
   sonarrApi: ReturnType<typeof getApi>;
   history: History;
+  events: Events;
   seriesData: Map<number, SeriesResourceExt>;
 }

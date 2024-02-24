@@ -136,6 +136,22 @@ export async function start(context: Context) {
     getBanner(context, seriesId, res);
   });
 
+  const ensureSeries = (context: Context, seriesIds: Set<number>) => {
+    if (seriesIds.size) {
+      const promises = [];
+      for (const seriesId of seriesIds) {
+        promises.push(context.sonarrApi.getJson<SeriesResourceExt>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
+          data.cachedImages = new Map<string, ImageCache>;
+          context.seriesData.set(seriesId, data);
+        }));
+      }
+
+      return Promise.all(promises).catch(() => {
+        console.log('Error retrieving series data');
+      });
+    }
+  };
+
   // History browsing
   app.get('/browse/:start?/:count?', async (req: Request, res: Response) => {
     // get and sanitise input parameters
@@ -163,20 +179,8 @@ export async function start(context: Context) {
       }
       return store;
     }, new Set<number>()) as Set<number>;
-    if (seriesIds.size) {
-      const promises = [];
-      for (const seriesId of seriesIds) {
-        promises.push(context.sonarrApi.getJson<SeriesResourceExt>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
-          data.cachedImages = new Map<string, ImageCache>;
-          context.seriesData.set(seriesId, data);
-        }));
-      }
-      try {
-        await Promise.all(promises);
-      } catch(e) {
-        console.log('Error retrieving series data');
-      }
-    }
+
+    await ensureSeries(context, seriesIds);
 
     // Calculate pagination data
     const end = start+count >= totalEvents ? totalEvents-1 : start + count - 1;
@@ -237,27 +241,62 @@ export async function start(context: Context) {
       sonarrBaseUrl: context.config.sonarrBaseUrl,
       countPreset,
       standardCount: countPreset.some(v => v === count.toString()),
+      canClickEvents: true,
       helpers
     });
   });
 
+  app.get('/event/:eventId?', async (req: Request, res: Response) => {
+    const eventId = req.params.eventId;
+    const event = context.events[eventId];
+    if (!event) {
+      res.statusCode = 400;
+      res.statusMessage = `Event ${eventId} not found`;
+      res.render('eventnotfound', {
+        eventId
+      });
+    } else {
+
+      if (event.event.series?.id) {
+        await ensureSeries(context, new Set([ event.event.series?.id]))
+      }
+      res.render('event', {
+        instanceName: context.hostConfig?.instanceName ?? 'Sonarr',
+        event: {
+          ...event,
+          indexDisplay: event.index + 1,
+          ascendingIndex: context.history.length - event.index - 1,
+          ascendingIndexDisplay: context.history.length - event.index
+        },
+        sonarrBaseUrl: context.config.sonarrBaseUrl,
+        helpers
+      });
+    }
+  });
+
   // Process webhooks from Sonarr
   app.use('/sonarr', express.json());
-  app.post('/sonarr', (req: Request, res: Response) => {
+
+  const processEvent = (req: Request, res: Response) => {
     const timestamp = Date.now();
     const id = crypto.randomBytes(12).toString('hex');
     const event: Event = {
       timestamp,
       id,
+      index: context.history.length,
       event: req.body
     };
     context.history.push(event);
+    context.events[event.id] = event;
     console.log(`New activity: ${event.event.eventType}`);
     res.status(200);
     res.end('ok');
 
     writeFileSync(context.config.historyFile, JSON.stringify(context.history), { encoding: 'utf8' });
-  });
+  };
+
+  app.post('/sonarr', processEvent);
+  app.put('/sonarr', processEvent);
 
   app.listen(context.config.port, context.config.host, () => {
     console.log(`[server]: Server is running at http://${context.config.host}:${context.config.port}`);

@@ -1,0 +1,12 @@
+<div class="container">
+  <div class="centreColumn">
+    <heading >Event history for {{instanceName}} (<a href="{{sonarrBaseUrl}}">{{sonarrBaseUrl}}</a>)</heading>
+    <events class="single">
+    <header>
+      <count>Event {{event.ascendingIndexDisplay}}</count>
+    </header>
+    {{> event event}}
+    <footer><browse><a href="/browse/{{event.ascendingIndex}}">Browse</a></browse></footer>
+    </events>
+  </div>
+</div>

@@ -2,6 +2,10 @@ body {
   font-family: "Roboto", "open sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif
 }
 
+.pointer {
+  cursor: pointer;
+}
+
 .container {
   display:flex;
   flex-direction: column;
@@ -28,6 +32,7 @@ events header {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
+  margin-top: 16px;
 }
 
 events header>count{
@@ -35,7 +40,6 @@ events header>count{
   font-size: 1.2em;
   font-weight: bold;  
   width:100%;
-  margin-top: 16px;
 }
 
 events header>sort {
@@ -45,6 +49,20 @@ events header>sort {
 events header>pagesize {
    white-space: nowrap;
    margin-left: 4px;  
+}
+
+footer {
+  display: flex;
+  flex-direction: row;
+  align-self: start;
+}
+
+footer>browse {
+  flex-grow: 1;
+  font-size: 1.2em;
+  font-weight: bold;
+  width:100%;
+  padding-left: 20px;
 }
 
 nav {
@@ -64,7 +82,6 @@ nav {
   display: inline-block;
   width: 32px;
   height: 32px;
-  /*padding: 6px 12px;*/
   margin-left: 4px;
   text-decoration: none;
   border-radius: 5px;
@@ -106,6 +123,10 @@ event {
   padding-bottom: 4px;
   padding-right: 4px;
   left: 0px;
+}
+
+.single event {
+  margin-top: 16px;
 }
 
 event left {
