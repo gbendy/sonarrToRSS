@@ -5,13 +5,16 @@
       <header>
         <count>Events {{start}}-{{end}} of {{total}}</count>
         <pagesize>Show <select onChange="location.href=`{{startUrl start}}/${this.value}{{ascendingQuery ascending}}`;">
-          {{#each countOptions}}
-          <option {{selectedIf ../count this}} value="{{this}}">{{this}}</option>
+          {{#unless standardCount}}
+            <option selected value="{{count}}">{{count}}</option>
+          {{/unless}}
+          {{#each countPreset}}
+          <option {{ifEqual ../count this 'selected' ''}} value="{{this}}">{{this}}</option>
           {{/each}}
         </select> per page </pagesize>
         <sort> <select onChange="location.href=`{{defaultSortedUrl start count}}?sort=${this.value}`;">
-          <option value="descending" {{selectedIf ascending false}}>Newest First</option>
-          <option value="ascending" {{selectedIf ascending true}}>Oldest First</option>
+          <option value="descending" {{ifEqual ascending false 'selected' ''}}>Newest First</option>
+          <option value="ascending" {{ifEqual ascending true 'selected' ''}}>Oldest First</option>
         </select></sort> 
       </header>
       {{> navigation}}

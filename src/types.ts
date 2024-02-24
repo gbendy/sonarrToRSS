@@ -1,5 +1,5 @@
-import type { HostConfigResource, SeriesResouce, WebHookPayload, getApi } from "./sonarrApiV3";
-import type { Response } from "express";
+import type { HostConfigResource, SeriesResouce, WebHookPayload, getApi } from './sonarrApiV3';
+import type { Response } from 'express';
 
 export interface Config {
   sonarrBaseUrl: string;

@@ -10,7 +10,10 @@ module.exports = tseslint.config(
     '@stylistic/ts': stylisticTs
     },
     rules: {
-      '@/eol-last': ["error", "always"]
+      '@/eol-last': ['error', 'always'],
+      '@/quotes': [ 'error', 'single' ],
+      'camelcase': [ 'error' ],
+      'no-trailing-spaces': [ 'error']
     }
   }
 );

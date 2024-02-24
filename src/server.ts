@@ -14,7 +14,7 @@ function parseInteger(str: string, defaultValue: undefined): number | undefined
 function parseInteger(str: string, defaultValue: number|undefined)
 {
   const value = Number.parseInt(str);
-  return Number.isNaN(value) ? defaultValue : value; 
+  return Number.isNaN(value) ? defaultValue : value;
 }
 
 function sendBuffer(buffer: Buffer, contentType: string|undefined, res: Response) {
@@ -95,8 +95,8 @@ const helpers = {
   ascendingQuery: (ascending: boolean) => {
     return ascending ? '?sort=ascending' : ''
   },
-  switchSortUrl: (start: number, count: number, ascending: boolean) => {
-    return `/browse/${start-1}/${count}${!ascending ? '?sort=ascending' : ''}`;
+  browseUrl: (start: number, count: number, ascending: boolean) => {
+    return `/browse/${start-1}/${count}${ascending ? '?sort=ascending' : ''}`;
   },
   ascendingUrl: (start: number, count: number) => {
     return `/browse/${start-1}/${count}?sort=ascending`;
@@ -110,8 +110,8 @@ const helpers = {
   prevUrl: (start: number, count: number, ascending: boolean) => {
     return `/browse/${Math.max(start-1-count, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
   },
-  selectedIf: (lhs: any, rhs: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-    return lhs == rhs ? 'selected' : '';
+  ifEqual: (lhs: any, rhs: any, isTrue: any, isFalse: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    return lhs == rhs ? isTrue : isFalse;
   }
 };
 
@@ -138,17 +138,25 @@ export async function start(context: Context) {
 
   // History browsing
   app.get('/browse/:start?/:count?', async (req: Request, res: Response) => {
-    const start = Math.max(parseInteger(req.params.start, 0), 0);
-    const count = parseInteger(req.params.count, 6);
+    // get and sanitise input parameters
+    const totalEvents = context.history.length;
+    const start = Math.min(Math.max(parseInteger(req.params.start, 0), 0), totalEvents-1);
+    const count = Math.max(parseInteger(req.params.count, 6), 1);
     const ascending = req.query.sort === 'ascending';
 
+    const numEvents = Math.min(totalEvents - start, count);
+
+    // select events to show
     const first = ascending ?
       start :
-      Math.max(context.history.length - start - count, 0);
-    const events = context.history.slice(first, first + count);
+      Math.max(totalEvents - start - count, 0);
+
+    const events = context.history.slice(first, first + numEvents);
     if (!ascending) {
       events.reverse();
     }
+
+    // fetch series info so we can show banners
     const seriesIds = events.reduce((store, e) => {
       if (e.event.series?.id && !context.seriesData.has(e.event.series?.id)) {
         store.add(e.event.series.id);
@@ -161,16 +169,58 @@ export async function start(context: Context) {
         promises.push(context.sonarrApi.getJson<SeriesResourceExt>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
           data.cachedImages = new Map<string, ImageCache>;
           context.seriesData.set(seriesId, data);
-        }));        
+        }));
       }
       try {
         await Promise.all(promises);
       } catch(e) {
-        console.log(`Error retrieving series data`);
+        console.log('Error retrieving series data');
       }
     }
-    const end = start+count >= context.history.length ? context.history.length-1 : start + count - 1;
-    const finalCount = end - start;
+
+    // Calculate pagination data
+    const end = start+count >= totalEvents ? totalEvents-1 : start + count - 1;
+    const numPages = Math.ceil(totalEvents / count);
+    const pagination = [];
+    const paginationCount = 9; // must be odd
+    const currentPage = Math.floor(start / count)
+    function createPagination(page: number) {
+      return {
+        label: page + 1,
+        start: page * count + 1,
+        active: currentPage === page
+      }
+    }
+    if (numPages < paginationCount) {
+      for (let i=0; i<numPages; i++) {
+        pagination.push(createPagination(i));
+      }
+    } else {
+      if (currentPage <= Math.floor(paginationCount / 2)) {
+        for (let i=0; i<paginationCount-2; i++) {
+          pagination.push(createPagination(i));
+        }
+        pagination.push({skip: true});
+        pagination.push(createPagination(numPages-1));
+      } else if (currentPage >= (numPages - paginationCount / 2)-1) {
+        pagination.push(createPagination(0));
+        pagination.push({skip: true});
+        for (let i=numPages-(paginationCount - 2); i<numPages; i++) {
+          pagination.push(createPagination(i));
+        }
+      } else {
+        pagination.push(createPagination(0));
+        pagination.push({skip: true});
+        const sidePages = Math.floor((paginationCount - 4) / 2);
+        for (let i=currentPage-sidePages; i<=currentPage+sidePages; i++) {
+          pagination.push(createPagination(i));
+        }
+        pagination.push({skip: true});
+        pagination.push(createPagination(numPages-1));
+      }
+    }
+    const countPreset = [ '6', '12', '24', '48', '96' ];
+
     res.render('home', {
       instanceName: context.hostConfig?.instanceName ?? 'Sonarr',
       events,
@@ -178,23 +228,24 @@ export async function start(context: Context) {
       start: start+1,
       end: end + 1,
       count: count,
-      eventCount: finalCount,
       first: start === 0,
-      last: end + 1 === context.history.length,
+      last: end + 1 === totalEvents,
       prevCount: Math.min(start, count),
-      nextCount: Math.min(context.history.length - 1 - end, count),
-      total: context.history.length,
+      nextCount: Math.min(totalEvents - 1 - end, count),
+      pagination,
+      total: totalEvents,
       sonarrBaseUrl: context.config.sonarrBaseUrl,
-      countOptions: [ "6", "12", "24", "48", "96" ],
+      countPreset,
+      standardCount: countPreset.some(v => v === count.toString()),
       helpers
     });
   });
-  
+
   // Process webhooks from Sonarr
   app.use('/sonarr', express.json());
   app.post('/sonarr', (req: Request, res: Response) => {
     const timestamp = Date.now();
-    const id = crypto.randomBytes(12).toString("hex");
+    const id = crypto.randomBytes(12).toString('hex');
     const event: Event = {
       timestamp,
       id,
@@ -207,7 +258,7 @@ export async function start(context: Context) {
 
     writeFileSync(context.config.historyFile, JSON.stringify(context.history), { encoding: 'utf8' });
   });
-  
+
   app.listen(context.config.port, context.config.host, () => {
     console.log(`[server]: Server is running at http://${context.config.host}:${context.config.port}`);
   });

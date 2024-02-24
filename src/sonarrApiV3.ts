@@ -290,7 +290,7 @@ function addHeaders(options:http.RequestOptions | https.RequestOptions, headers:
   options.headers = Object.assign({}, options.headers, headers);
 }
 
-export type JSONValue = 
+export type JSONValue =
  | string
  | number
  | boolean
@@ -350,7 +350,7 @@ function apiGetBuffer(context: HttpContext, path: string): Promise<{buffer: Buff
       const rawData: Array<Buffer> = [];
       res.on('data', (chunk) => { rawData.push(chunk); });
       res.on('end', () => {
-        
+
         resolve({
           buffer: Buffer.concat(rawData),
           contentType: res.headersDistinct['content-type']?.[0]

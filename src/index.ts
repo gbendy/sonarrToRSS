@@ -12,12 +12,12 @@ async function loadConfig(): Promise<Context> {
     historyFile: './history.json'
   }, JSON.parse(configJson));
   if (!context.config.sonarrBaseUrl) {
-    throw `sonarrBaseUrl not specified`;
+    throw 'sonarrBaseUrl not specified';
   }
   if (!context.config.apiKey) {
-    throw `apiKey not specified`;
+    throw 'apiKey not specified';
   }
-  
+
   context.sonarrApi = getApi(context.config.sonarrBaseUrl, context.config.apiKey);
   context.seriesData = new Map<number, SeriesResourceExt>();
 
@@ -35,7 +35,7 @@ function loadHistory(context: Context): Promise<Context> {
 }
 
 function getSonarrHostConfig(context: Context): Promise<Context> {
-  return context.sonarrApi.getJson<HostConfigResource>(`config/host`).then(hostConfig => {
+  return context.sonarrApi.getJson<HostConfigResource>('config/host').then(hostConfig => {
     context.hostConfig = hostConfig;
     return context;
   }).catch(()=> {

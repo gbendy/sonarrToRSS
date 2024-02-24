@@ -50,11 +50,38 @@ events header>pagesize {
 nav {
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
+  align-self: center;
 }
 
-nav prev {
-   
+.hidden {
+  visibility: hidden;
+}
+
+.pagination {
+}
+
+.pagination a {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  /*padding: 6px 12px;*/
+  margin-left: 4px;
+  text-decoration: none;
+  border-radius: 5px;
+  text-align: center;
+  line-height: 30px;
+}
+
+.pagination a.active {
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 5px;
+}
+
+.pagination a:hover:not(.active).not(.skip) {background-color: #ddd;}
+
+.pagination a, .pagination a:visited, .pagination a:hover, .pagination a:active {
+  color: inherit;
 }
 
 nav fill {
@@ -63,8 +90,10 @@ nav fill {
   display: flex;
 }
 
+nav prev {
+}
+
 nav next {
-   
 }
 
 event {
