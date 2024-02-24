@@ -95,7 +95,9 @@ nav {
   border-radius: 5px;
 }
 
-.pagination a:hover:not(.active).not(.skip) {background-color: #ddd;}
+.pagination a:hover:not(.active, .skip) {
+  background-color: #ddd;
+}
 
 .pagination a, .pagination a:visited, .pagination a:hover, .pagination a:active {
   color: inherit;
@@ -164,6 +166,10 @@ event episode {
   padding-top: 0px;
 }
 
+event episode.noseries {
+  font-size: 1.2em;
+}
+
 event release {
   display: flex;
   flex-direction: column;
@@ -187,4 +193,22 @@ event time {
 img {
   width: 100%;
   height: auto;
+}
+
+span.warning {
+  color: orange;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+span.error {
+  color: red;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+span.good {
+  color: green;
+  font-weight: bold;
+  text-transform: capitalize;
 }

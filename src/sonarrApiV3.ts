@@ -265,7 +265,7 @@ export interface WebHookEpisodeFile {
 }
 
 export interface WebHookPayload {
-  eventType: 'Test' | 'SeriesAdd' | 'Grab' | 'Download',
+  eventType: 'Test' | 'SeriesAdd' | 'Grab' | 'Download' | 'Health' | 'HealthRestored',
   instanceName: string,
   applicationUrl: string;
   series?: WebHookSeries,
@@ -277,6 +277,10 @@ export interface WebHookPayload {
   downloadClientType?: string,
   downloadId?: string,
   customFormatInfo?: CustomFormatInfo;
+  level: 'warning' | 'error';
+  message: string;
+  type: string;
+  wikiUrl: string;
 }
 
 type HttpContext = {

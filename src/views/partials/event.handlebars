@@ -4,10 +4,12 @@
   class="pointer"
 {{/if}}
 >
-  <left>
-    <series>{{event.series.title}}</series>
-    <img src="/banner/{{event.series.id}}">
-  </left>
+  {{#if event.series}}
+    <left>
+      <series>{{event.series.title}}</series>
+      <img src="/banner/{{event.series.id}}">
+    </left>
+  {{/if}}
   <data>
     <detail>
     {{> (eventPartial event) this}}

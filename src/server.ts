@@ -71,7 +71,9 @@ function getBanner(context: Context, seriesId: number, res: Response) {
 const eventTypePartials: Record<string, string> = {
   SeriesAdd: 'seriesAdd',
   Grab: 'grab',
-  Download: 'download'
+  Download: 'download',
+  Health: 'health',
+  HealthRestored: 'healthRestored'
 };
 
 const helpers = {
