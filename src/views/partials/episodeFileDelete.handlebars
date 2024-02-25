@@ -1,8 +1,8 @@
 {{#each event.episodes}}
-  <episode {{#unless (showBanner ../event)}}class="noseries"{{/unless}}>Downloaded {{#unless (showBanner ../event)}}{{../event/series/title}}{{/unless}} S{{this.seasonNumber}} E{{this.episodeNumber}} - {{this.title}}</episode>
+  <episode {{#unless (showBanner ../event)}}class="noseries"{{/unless}}>Deleted Episode {{#unless (showBanner ../event)}}{{../event/series/title}}{{/unless}} S{{this.seasonNumber}} E{{this.episodeNumber}} - {{this.title}}</episode>
 {{/each}}
 <release>
-<entry><span class="label">Title</span>: {{event.release.releaseTitle}}</entry>
+<entry><span class="label">Reason</span>: {{event.deleteReason}}</entry>
 <entry><span class="label">File</span>: {{event.episodeFile.relativePath}} ({{toHumanSize event.episodeFile.size}})</entry>
 <entry><span class="label">Quality</span>: {{event.episodeFile.quality}}</entry>
 <entry><span class="label">Codec</span>: {{event.episodeFile.mediaInfo.videoCodec}}/{{event.episodeFile.mediaInfo.audioCodec}} ({{event.episodeFile.mediaInfo.audioChannels}})</entry>

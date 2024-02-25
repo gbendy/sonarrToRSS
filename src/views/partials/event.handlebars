@@ -4,7 +4,7 @@
   class="pointer"
 {{/if}}
 >
-  {{#if event.series}}
+  {{#if (showBanner event)}}
     <left>
       <series>{{event.series.title}}</series>
       <img src="{{bannerUrl event.series.id useApplicationUrl}}">

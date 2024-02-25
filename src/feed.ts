@@ -6,11 +6,15 @@ import { create } from 'express-handlebars';
 
 export function eventTitle(event: WebHookPayload) {
   if (event.eventType === 'SeriesAdd') {
-    return 'New series added';
+    return `New series added - ${event.series?.title}`;
+  } if (event.eventType === 'SeriesDelete') {
+    return `Series deleted - ${event.series?.title}`;
   } else if (event.eventType === 'Download') {
-    return `Downloaded S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}`;
+    return `Downloaded ${event.series?.title} S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}`;
+  } else if (event.eventType === 'EpisodeFileDelete') {
+    return `Deleted ${event.series?.title} Episode S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}`;
   } else if (event.eventType === 'Grab') {
-    return `Grabbed S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}`;
+    return `Grabbed ${event.series?.title} S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}`;
   } else if (event.eventType === 'Health') {
     return 'Health';
   } else if (event.eventType === 'HealthRestored') {

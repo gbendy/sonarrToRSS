@@ -1,5 +1,5 @@
 {{#each event.episodes}}
-  <episode>Grabbed S{{this.seasonNumber}} E{{this.episodeNumber}} - {{this.title}}</episode>
+  <episode {{#unless (showBanner ../event)}}class="noseries"{{/unless}}>Grabbed {{#unless (showBanner ../event)}}{{../event/series/title}}{{/unless}} S{{this.seasonNumber}} E{{this.episodeNumber}} - {{this.title}}</episode>
 {{/each}}
 <release>
 <entry><span class="label">Title</span>: {{event.release.releaseTitle}} ({{toHumanSize event.release.size}})</entry>

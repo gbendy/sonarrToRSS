@@ -265,7 +265,7 @@ export interface WebHookEpisodeFile {
 }
 
 export interface WebHookPayload {
-  eventType: 'Test' | 'SeriesAdd' | 'Grab' | 'Download' | 'Health' | 'HealthRestored',
+  eventType: 'Download' | 'EpisodeFileDelete' | 'Grab' | 'Health' | 'HealthRestored' | 'SeriesAdd' | 'SeriesDelete' | 'Test',
   instanceName: string,
   applicationUrl: string;
   series?: WebHookSeries,

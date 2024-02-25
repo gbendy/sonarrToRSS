@@ -70,11 +70,14 @@ function getBanner(context: Context, seriesId: number, res: Response) {
 }
 
 const eventTypePartials: Record<string, string> = {
-  SeriesAdd: 'seriesAdd',
-  Grab: 'grab',
   Download: 'download',
+  EpisodeFileDelete: 'episodeFileDelete',
+  Grab: 'grab',
   Health: 'health',
-  HealthRestored: 'healthRestored'
+  HealthRestored: 'healthRestored',
+  SeriesAdd: 'seriesAdd',
+  SeriesDelete: 'seriesDelete',
+  Test: 'test'
 };
 
 export function resolveUrlPath(context: Context, path: string)
@@ -97,8 +100,8 @@ export async function ensureSeries(context: Context, seriesIds: Set<number>) {
       }));
     }
 
-    return Promise.all(promises).catch(() => {
-      console.log('Error retrieving series data');
+    return Promise.all(promises).catch((e) => {
+      console.log(`Error retrieving series data ${e}`);
     });
   }
 }
@@ -147,6 +150,9 @@ export function generateHelpers(context: Context) {
     bannerUrl(seriedId: string, applicationUrl: boolean = false) {
       const path = `banner/${seriedId}`;
       return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
+    },
+    showBanner(event: WebHookPayload) {
+      return event.series && event.eventType !== 'SeriesDelete' && event.eventType !== 'Test' && context.seriesData.has(event.series.id);
     },
     ifEqual: (lhs: any, rhs: any, isTrue: any, isFalse: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       return lhs == rhs ? isTrue : isFalse;
