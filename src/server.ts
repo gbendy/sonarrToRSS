@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import express, { Express, Request, Response } from 'express';
 import { WebHookPayload } from './sonarrApiV3';
+import feed, { addEvent } from './feed';
 
 /**
  * Parses the given string and returns it as an Integer.
@@ -76,55 +77,94 @@ const eventTypePartials: Record<string, string> = {
   HealthRestored: 'healthRestored'
 };
 
-const helpers = {
-  dateTime: (date: number) => {
-    const d = new Date(date);
-    return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
-  },
-  eventPartial: (event: WebHookPayload) => {
-    return eventTypePartials[event.eventType] ?? 'defaultType';
-  },
-  toHumanSize: (value: number) => {
-    const i = Math.floor(Math.log(value) / Math.log(1024));
-    return (value / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'KB', 'MB', 'GB', 'TB'][i];
-  },
-  startUrl: (start: number) => {
-    return `/browse/${start-1}`;
-  },
-  defaultSortedUrl: (start: number, count: number) => {
-    return `/browse/${start-1}/${count}`;
-  },
-  ascendingQuery: (ascending: boolean) => {
-    return ascending ? '?sort=ascending' : ''
-  },
-  browseUrl: (start: number, count: number, ascending: boolean) => {
-    return `/browse/${start-1}/${count}${ascending ? '?sort=ascending' : ''}`;
-  },
-  ascendingUrl: (start: number, count: number) => {
-    return `/browse/${start-1}/${count}?sort=ascending`;
-  },
-  descendingUrl: (start: number, count: number) => {
-    return `/browse/${start-1}/${count}`;
-  },
-  nextUrl: (start: number, count: number, ascending: boolean) => {
-    return `/browse/${Math.max(start-1+count, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
-  },
-  prevUrl: (start: number, count: number, ascending: boolean) => {
-    return `/browse/${Math.max(start-1-count, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
-  },
-  ifEqual: (lhs: any, rhs: any, isTrue: any, isFalse: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-    return lhs == rhs ? isTrue : isFalse;
+export function resolveUrlPath(context: Context, path: string)
+{
+  return `${context.config.urlBase}${path.startsWith('/') ? path.slice(1) : path}`;
+}
+
+export function resolveApplicationUrl(context: Context, path: string)
+{
+  return `${context.config.applicationUrl}${path.startsWith('/') ? path.slice(1) : path}`;
+}
+
+export async function ensureSeries(context: Context, seriesIds: Set<number>) {
+  if (seriesIds.size) {
+    const promises = [];
+    for (const seriesId of seriesIds) {
+      promises.push(context.sonarrApi.getJson<SeriesResourceExt>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
+        data.cachedImages = new Map<string, ImageCache>;
+        context.seriesData.set(seriesId, data);
+      }));
+    }
+
+    return Promise.all(promises).catch(() => {
+      console.log('Error retrieving series data');
+    });
   }
-};
+}
+
+export function generateHelpers(context: Context) {
+  return {
+    dateTime: (date: number) => {
+      const d = new Date(date);
+      return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+    },
+    eventPartial: (event: WebHookPayload) => {
+      return eventTypePartials[event.eventType] ?? 'defaultType';
+    },
+    toHumanSize: (value: number) => {
+      const i = Math.floor(Math.log(value) / Math.log(1024));
+      return (value / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'KB', 'MB', 'GB', 'TB'][i];
+    },
+    ascendingQuery: (ascending: boolean) => {
+      return ascending ? '?sort=ascending' : ''
+    },
+    browseUrl: (start: number|undefined, count: number|undefined, ascending: boolean|undefined, applicationUrl: boolean = false) => {
+      let path = 'browse';
+      if (start !== undefined) {
+        path += `/${start-1}`;
+        if (count !== undefined) {
+          path += `/${count}`;
+        }
+      }
+      if (ascending) {
+        path += '?sort=ascending';
+      }
+      return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
+    },
+    nextUrl: (start: number, count: number, ascending: boolean, applicationUrl: boolean = false) => {
+      const path = `browse/${Math.max(start-1+count, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
+      return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
+    },
+    prevUrl: (start: number, count: number, ascending: boolean, applicationUrl: boolean = false) => {
+      const path = `browse/${Math.max(start-1-count, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
+      return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
+    },
+    eventUrl(eventId: string, applicationUrl: boolean = false) {
+      const path = `event/${eventId}`;
+      return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
+    },
+    bannerUrl(seriedId: string, applicationUrl: boolean = false) {
+      const path = `banner/${seriedId}`;
+      return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
+    },
+    ifEqual: (lhs: any, rhs: any, isTrue: any, isFalse: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      return lhs == rhs ? isTrue : isFalse;
+    }
+  };
+}
 
 export async function start(context: Context) {
   const app: Express = express();
+  await feed.init(context);
+
+  const helpers = generateHelpers(context);
   app.engine('handlebars', engine());
   app.set('view engine', 'handlebars');
   app.set('views', './src/views');
 
   app.get('/', (req: Request, res: Response) => {
-    res.redirect('/browse/');
+    res.redirect(resolveUrlPath(context, 'browse/'));
   });
 
   // get series banner image
@@ -137,22 +177,6 @@ export async function start(context: Context) {
     }
     getBanner(context, seriesId, res);
   });
-
-  const ensureSeries = (context: Context, seriesIds: Set<number>) => {
-    if (seriesIds.size) {
-      const promises = [];
-      for (const seriesId of seriesIds) {
-        promises.push(context.sonarrApi.getJson<SeriesResourceExt>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
-          data.cachedImages = new Map<string, ImageCache>;
-          context.seriesData.set(seriesId, data);
-        }));
-      }
-
-      return Promise.all(promises).catch(() => {
-        console.log('Error retrieving series data');
-      });
-    }
-  };
 
   // History browsing
   app.get('/browse/:start?/:count?', async (req: Request, res: Response) => {
@@ -231,7 +255,7 @@ export async function start(context: Context) {
       instanceName: context.hostConfig?.instanceName ?? 'Sonarr',
       events,
       ascending,
-      start: start+1,
+      start: start + 1,
       end: end + 1,
       count: count,
       first: start === 0,
@@ -255,12 +279,13 @@ export async function start(context: Context) {
       res.statusCode = 400;
       res.statusMessage = `Event ${eventId} not found`;
       res.render('eventnotfound', {
-        eventId
+        eventId,
+        helpers
       });
     } else {
 
-      if (event.event.series?.id) {
-        await ensureSeries(context, new Set([ event.event.series?.id]))
+      if (event.event.series?.id !== undefined && !context.seriesData.has(event.event.series.id)) {
+        await ensureSeries(context, new Set([ event.event.series?.id]));
       }
       res.render('event', {
         instanceName: context.hostConfig?.instanceName ?? 'Sonarr',
@@ -294,11 +319,22 @@ export async function start(context: Context) {
     res.status(200);
     res.end('ok');
 
+    if (event.event.series?.id !== undefined && !context.seriesData.has(event.event.series.id)) {
+      ensureSeries(context, new Set([ event.event.series?.id]));
+    }
+    addEvent(context, event);
+
     writeFileSync(context.config.historyFile, JSON.stringify(context.history), { encoding: 'utf8' });
   };
 
   app.post('/sonarr', processEvent);
   app.put('/sonarr', processEvent);
+
+  app.get('/rss', (req: Request, res: Response) => {
+    res.setHeader('content-type', 'application/xml; charset=UTF-8');
+    res.write(context.feed.feed.rss2());
+    res.end();
+  });
 
   app.listen(context.config.port, context.config.host, () => {
     console.log(`[server]: Server is running at http://${context.config.host}:${context.config.port}`);

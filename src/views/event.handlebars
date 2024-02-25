@@ -5,8 +5,8 @@
     <header>
       <count>Event {{event.ascendingIndexDisplay}}</count>
     </header>
-    {{> event event}}
-    <footer><browse><a href="/browse/{{event.ascendingIndex}}">Browse</a></browse></footer>
+    {{> event event useApplicationUrl=useApplicationUrl}}
+    <footer><browse><a href="{{browseUrl event.ascendingIndex undefined undefined useApplicationUrl}}">Browse</a></browse></footer>
     </events>
   </div>
 </div>

@@ -1,5 +1,7 @@
+import type { Feed } from 'feed';
 import type { HostConfigResource, SeriesResouce, WebHookPayload, getApi } from './sonarrApiV3';
 import type { Response } from 'express';
+import type { ExpressHandlebars } from 'express-handlebars';
 
 export interface Config {
   sonarrBaseUrl: string;
@@ -7,6 +9,8 @@ export interface Config {
   port: number;
   host: string;
   historyFile: string;
+  applicationUrl: string;
+  urlBase: string;
 }
 
 export interface Event {
@@ -30,6 +34,11 @@ export interface SeriesResourceExt extends SeriesResouce {
   cachedImages: Map<string, ImageCache>;
 }
 
+export interface RSSFeed {
+  feed: Feed;
+  handlebars: ExpressHandlebars;
+}
+
 export interface Context {
   config: Config;
   hostConfig: HostConfigResource;
@@ -37,4 +46,5 @@ export interface Context {
   history: History;
   events: Events;
   seriesData: Map<number, SeriesResourceExt>;
+  feed: RSSFeed;
 }

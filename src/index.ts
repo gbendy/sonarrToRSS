@@ -21,6 +21,24 @@ async function loadConfig(): Promise<Context> {
   context.sonarrApi = getApi(context.config.sonarrBaseUrl, context.config.apiKey);
   context.seriesData = new Map<number, SeriesResourceExt>();
 
+  // URL base must start and end with a /
+  if (context.config.urlBase) {
+    if (context.config.urlBase !== '/') {
+      if (!context.config.urlBase.startsWith('/')) {
+        context.config.urlBase = '/' + context.config.urlBase;
+      }
+      if (!context.config.urlBase.endsWith('/')) {
+        context.config.urlBase = context.config.urlBase + '/';
+      }
+    }
+  } else {
+    context.config.urlBase = '/';
+  }
+  // Application URL must end with a /
+  if (!context.config.applicationUrl.endsWith('/')) {
+    context.config.applicationUrl = context.config.applicationUrl + '/';
+  }
+
   return context;
 }
 

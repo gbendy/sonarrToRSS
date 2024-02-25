@@ -34,6 +34,7 @@
     "typescript-eslint": "^7.0.2"
   },
   "dependencies": {
-    "express-handlebars": "^7.1.2"
+    "express-handlebars": "^7.1.2",
+    "feed": "^4.2.2"
   }
 }
