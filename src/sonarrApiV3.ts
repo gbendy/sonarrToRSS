@@ -277,10 +277,11 @@ export interface WebHookPayload {
   downloadClientType?: string,
   downloadId?: string,
   customFormatInfo?: CustomFormatInfo;
-  level: 'warning' | 'error';
-  message: string;
-  type: string;
-  wikiUrl: string;
+  level?: 'warning' | 'error';
+  message?: string;
+  type?: string;
+  wikiUrl?: string;
+  deleteReason?: string;
 }
 
 type HttpContext = {
