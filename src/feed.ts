@@ -10,9 +10,9 @@ export function eventTitle(event: WebHookPayload) {
   } if (event.eventType === 'SeriesDelete') {
     return `Series deleted - ${event.series?.title}`;
   } else if (event.eventType === 'Download') {
-    return `Downloaded ${event.series?.title} S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}`;
+    return `Downloaded ${event.series?.title} S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}${event.isUpgrade ? ' - upgrade' : ''}`;
   } else if (event.eventType === 'EpisodeFileDelete') {
-    return `Deleted ${event.series?.title} Episode S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}`;
+    return `Deleted ${event.series?.title} Episode S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title} - ${event.deleteReason}`;
   } else if (event.eventType === 'Grab') {
     return `Grabbed ${event.series?.title} S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}`;
   } else if (event.eventType === 'Health') {
