@@ -5,9 +5,11 @@ import { WebHookPayload } from './sonarrApiV3';
 import { create } from 'express-handlebars';
 
 export function eventTitle(event: WebHookPayload) {
-  if (event.eventType === 'SeriesAdd') {
+  if (event.eventType === 'ApplicationUpdate') {
+    return `Application update - ${event.message}`;
+  } else if (event.eventType === 'SeriesAdd') {
     return `New series added - ${event.series?.title}`;
-  } if (event.eventType === 'SeriesDelete') {
+  } else if (event.eventType === 'SeriesDelete') {
     return `Series deleted - ${event.series?.title}`;
   } else if (event.eventType === 'Download') {
     return `Downloaded ${event.series?.title} S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}${event.isUpgrade ? ' - upgrade' : ''}`;

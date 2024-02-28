@@ -265,7 +265,7 @@ export interface WebHookEpisodeFile {
 }
 
 export interface WebHookPayload {
-  eventType: 'Download' | 'EpisodeFileDelete' | 'Grab' | 'Health' | 'HealthRestored' | 'SeriesAdd' | 'SeriesDelete' | 'Test',
+  eventType: 'ApplicationUpdate' | 'Download' | 'EpisodeFileDelete' | 'Grab' | 'Health' | 'HealthRestored' | 'SeriesAdd' | 'SeriesDelete' | 'Test',
   instanceName: string,
   applicationUrl: string;
   series?: WebHookSeries,
@@ -282,6 +282,8 @@ export interface WebHookPayload {
   type?: string;
   wikiUrl?: string;
   deleteReason?: string;
+  previousVersion?: string;
+  newVersion?: string;
 }
 
 type HttpContext = {

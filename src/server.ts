@@ -70,6 +70,7 @@ function getBanner(context: Context, seriesId: number, res: Response) {
 }
 
 const eventTypePartials: Record<string, string> = {
+  ApplicationUpdate: 'applicationUpdate',
   Download: 'download',
   EpisodeFileDelete: 'episodeFileDelete',
   Grab: 'grab',
