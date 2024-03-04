@@ -1,5 +1,24 @@
 body {
-  font-family: "Roboto", "open sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif
+  font-family: "Roboto", "open sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  background-color: #f5f7fa;
+}
+
+span.warning {
+  color: orange;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+span.error {
+  color: red;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+span.good {
+  color: green;
+  font-weight: bold;
+  text-transform: capitalize;
 }
 
 .pointer {
@@ -75,6 +94,32 @@ nav {
   visibility: hidden;
 }
 
+.overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color:white;
+    opacity: .75;
+    z-index: 9999999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#overlay message {
+  color: black;
+  background-color: white;
+  display: flex;
+  margin-top: 20px;
+  padding: 8px 16px;
+  border: 2px solid #333;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
 .pagination {
 }
 
@@ -125,6 +170,59 @@ event {
   padding-bottom: 4px;
   padding-right: 4px;
   left: 0px;
+}
+
+.config event {
+  margin-top: 16px;
+}
+
+.config episode {
+  margin-bottom: 8px;
+}
+
+.config entry {
+  font-size: 1.2em;
+  margin-top: 4px;
+  max-width: 650px;
+}
+
+.config event release entry {
+  display: flex;
+  margin-top: 8px;
+}
+
+.config event release entry .label {
+  flex: 0 0 150px;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.config event release entry.tip {
+  margin-left: 166px; /* input+label margin */
+  margin-top: 2px;
+  color: #909293;
+}
+
+.config input,tip,button {
+  margin-left: 16px;
+  padding: 6px 16px;
+  flex: auto;
+  width: 100%;
+}
+
+.config .checkboxWrapper {
+
+}
+
+.config span {
+  text-transform: inherit;
+}
+
+.config [type='checkbox'] {
+  flex-grow: 0;
+  width: 20px;
+  height: 20px;
 }
 
 .single event {
@@ -195,20 +293,3 @@ img {
   height: auto;
 }
 
-span.warning {
-  color: orange;
-  font-weight: bold;
-  text-transform: capitalize;
-}
-
-span.error {
-  color: red;
-  font-weight: bold;
-  text-transform: capitalize;
-}
-
-span.good {
-  color: green;
-  font-weight: bold;
-  text-transform: capitalize;
-}

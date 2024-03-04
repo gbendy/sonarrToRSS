@@ -1,0 +1,251 @@
+
+const isConfigured = {{context.config.configured}};
+
+if (!isConfigured) {
+  window.onload = () => {
+    document.getElementById('applicationUrl').value = document.location.href;
+  };
+}
+function startProgress(element, prefix, animation = ['⠁','⠂','⠄','⡀','⢀','⠠','⠐','⠈'], interval = 500) {
+  let count = 1;
+  const animationLength = animation.length;
+  element.textContent = `${prefix} ${animation[0]}`;
+  return setInterval(() => {
+    element.textContent = `${prefix} ${animation[count % animationLength]}`;
+    count++;
+  }, interval);
+}
+
+function isUrl(value) {
+  try {
+    return new URL(value);
+  } catch {
+    return false;
+  }
+}
+
+function isString(value) {
+  return value?.constructor === String;
+}
+
+function elementIsString(element) {
+  return isString(element?.value);
+}
+
+function elementIsNonEmptyString(element) {
+  return elementIsString(element) && element.value !== '';
+}
+
+function elementIsInteger(element) {
+  return elementIsString(element) && !Number.isNaN(Number.parseInt(element.value, 10));
+}
+
+function elementIsBoolean(element) {
+  return element.checked === true || element.checked === false;
+}
+
+function elementIsUrl(element) {
+  return !!isUrl(element?.value);
+}
+
+function elementIsHttpUrl(element) {
+  const url = isUrl(element?.value);
+  return url ? (url.protocol === 'http:' || url.protocol === 'https:') : false;
+}
+
+function elementIsHttpUrlOrEmptyString(element) {
+  return elementIsHttpUrl(element) || (elementIsString(element) && element.value === '');
+}
+
+function validate(elementId, validationFunction, getFunction) {
+  const element = document.getElementById(elementId);
+  const messageElement = document.getElementById(elementId + 'Message');
+  messageElement.classList.remove('error');
+
+  if (!validationFunction(element)) {
+    messageElement.classList.add('error');
+    return [ false ];
+  }
+  return [ true, getFunction(element) ];
+}
+
+function elementGetString(element) {
+  return element.value;
+}
+
+function elementGetInteger(element) {
+  return Number.parseInt(element.value, 10);
+}
+
+function elementGetBoolean(element) {
+  return element.checked
+}
+
+function validateConfig() {
+  const [ portValid, port ] = validate('port', elementIsInteger, elementGetInteger);
+  const [ addressValid, address ] = validate('address', elementIsNonEmptyString, elementGetString);
+  const [ applicationUrlValid, applicationUrl ] = validate('applicationUrl', elementIsHttpUrl, elementGetString);
+  const [ urlBaseValid, urlBase ] = validate('urlBase', elementIsString, elementGetString);
+  const [ sonarrBaseUrlValid, sonarrBaseUrl ] = validate('sonarrBaseUrl', elementIsHttpUrlOrEmptyString, elementGetString);
+  const [ sonarrInsecureValid, sonarrInsecure ] = validate('sonarrInsecure', elementIsBoolean, elementGetBoolean);
+  const [ sonarrApiKeyValid, sonarrApiKey ] = validate('sonarrApiKey', elementIsString, elementGetString);
+
+  if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
+    !sonarrApiKeyValid || !sonarrApiKeyValid) {
+    throw 'Invalid Configuration';
+  }
+  return {
+    port,
+    address,
+    applicationUrl,
+    urlBase,
+    sonarrBaseUrl,
+    sonarrInsecure,
+    sonarrApiKey
+  }
+}
+
+async function testSonarr() {
+  const responseElement = document.getElementById('testSonarrResult');
+  const sonarrBaseUrlElement = document.getElementById('sonarrBaseUrl');
+  const sonarrInsecureElement = document.getElementById('sonarrInsecure');
+  const sonarrApiKeyElement = document.getElementById('sonarrApiKey');
+  const sonarrTestElement = document.getElementById('testSonarr');
+
+  const testUrl='{{testSonarrUrl}}';
+
+  responseElement.classList.remove('error', 'good');
+  sonarrTestElement.disabled = true;
+  let progress;
+  try {
+    const url = isUrl(sonarrBaseUrlElement.value);
+    if (!url) {
+      throw 'Sonarr Base URL is not a URL';  
+    } else {
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        throw 'Sonarr Base URL is not a http or https URL';
+      }
+    }
+    if (sonarrApiKeyElement.value === '') {
+      throw 'No API Key supplied';
+    }
+    progress = startProgress(sonarrTestElement, 'Testing');
+
+    const res = await fetch('{{testSonarrUrl}}',
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sonarrBaseUrl: sonarrBaseUrlElement.value,
+          sonarrInsecure: sonarrInsecureElement.checked,
+          sonarrApiKey: sonarrApiKeyElement.value
+        })
+      }
+    );
+    clearInterval(progress);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.result === 'OK') {
+        responseElement.textContent = `Connected to ${json.instanceName}`;
+        responseElement.classList.remove('error');
+        responseElement.classList.add('good');
+        setTimeout(() => {
+          responseElement.classList.remove('good');
+        }, 3000)
+      } else {
+        throw `Failed: ${json.message}`;
+      }
+    } else {
+      throw `Sonarr API test returned unexpected response: ${res.status} ${res.statusText}`;
+    }
+  } catch(e) {
+    clearInterval(progress);
+    responseElement.textContent = isString(e) ? e : 'Error testing Sonarr API.';
+    responseElement.classList.add('error');
+    responseElement.classList.remove('good');
+  } finally {
+    sonarrTestElement.disabled = false;
+    sonarrTestElement.textContent = 'Test';
+  }
+}
+
+function appendPath(source, path) {
+  return (source.endsWith('/') ? source : (source + '/')) + path;
+}
+
+async function reloadAndRedirect(message, applicationUrl, redirectUrl) {
+  const overlay = document.getElementById('overlay');
+  const overlayMessage = document.getElementById('overlayMessage');
+  overlay.classList.remove('hidden');
+  overlay.classList.add('overlay');
+  
+  startProgress(overlayMessage, message);
+  const pingUrl = appendPath(applicationUrl, 'api/ping');
+  async function ping() {
+    try {
+      const res = await fetch(pingUrl);
+      if (res.ok) {
+        window.location = redirectUrl;
+      }
+    } catch {
+    }
+    setTimeout(ping, 500);
+  }
+  ping();
+}
+
+async function saveConfig() {
+  const saveConfigElement = document.getElementById('saveConfig');
+
+  saveConfigElement.disabled = true;
+  let progress;
+
+  try {
+    progress = startProgress(saveConfigElement, 'Saving');
+    const config = validateConfig();
+
+    const res = await fetch('api/saveConfig',
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(config)
+      }
+    );
+    
+    clearInterval(progress);
+
+    if (res.ok) {
+      const json = await res.json();
+      if (json.result === 'OK') {
+        saveConfigElement.textContent = 'Saved';
+        setTimeout(() => {
+          saveConfigElement.textContent = 'Save';
+        }, 3000);
+        if (json.reload) {
+          if (!isConfigured) {
+            reloadAndRedirect(`Reconfiguring, waiting for ${config.applicationUrl} to be ready`, config.applicationUrl, config.applicationUrl);
+          } else {
+            reloadAndRedirect(`Reconfiguring, waiting for ${config.applicationUrl} to be ready`, config.applicationUrl, appendPath(config.applicationUrl, 'config'));
+          }
+        }
+      } else {
+        throw `Failed: ${json.message}`;
+      }
+    } else {
+      throw `Save Failed`;
+    }
+  } catch(e) {
+    clearInterval(progress);
+    saveConfigElement.textContent = isString(e) ? e : 'Error saving configuration';
+    setTimeout(() => {
+      saveConfigElement.textContent = 'Save';
+    }, 3000);
+  } finally {
+    saveConfigElement.disabled = false;
+  }
+
+}

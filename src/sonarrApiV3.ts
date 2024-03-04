@@ -2,6 +2,19 @@ import https from 'node:https';
 import http, { IncomingMessage, OutgoingHttpHeaders } from 'node:http';
 import { urlToHttpOptions } from 'node:url';
 
+export type JSONValue =
+ | string
+ | number
+ | boolean
+ | null
+ | JSONValue[]
+ | {[key: string]: JSONValue}
+
+export interface JSONObject {
+  [k: string]: JSONValue
+}
+export interface JSONArray extends Array<JSONValue> {}
+
 export interface AddSeriesOptions {
   ignoreEpisodesWithFiles: boolean;
   ignoreEpisodesWithoutFiles: boolean;
@@ -289,7 +302,7 @@ export interface WebHookPayload {
 type HttpContext = {
   httpInterface: typeof https | typeof http;
   sonarrBaseUrl: string;
-  apiKey: string;
+  sonarrApiKey: string;
   defaultOptions: http.RequestOptions | https.RequestOptions;
 }
 
@@ -297,31 +310,18 @@ function addHeaders(options:http.RequestOptions | https.RequestOptions, headers:
   options.headers = Object.assign({}, options.headers, headers);
 }
 
-export type JSONValue =
- | string
- | number
- | boolean
- | null
- | JSONValue[]
- | {[key: string]: JSONValue}
-
-export interface JSONObject {
-  [k: string]: JSONValue
-}
-export interface JSONArray extends Array<JSONValue> {}
-
 function apiGetJson<JsonType=JSONValue>(context: HttpContext, path: string): Promise<JsonType> {
   return new Promise((resolve, reject) => {
     const options = Object.assign({}, context.defaultOptions,urlToHttpOptions(new URL(`${context.sonarrBaseUrl}/api/v3/${path}`)));
     addHeaders(options, {
       'accept': 'application/json',
-      'X-Api-Key': context.apiKey
+      'X-Api-Key': context.sonarrApiKey
     });
     context.httpInterface.get(options, res => {
-      const { statusCode } = res;
+      const { statusCode, statusMessage } = res;
       if (statusCode !== 200) {
         res.resume();
-        reject(`unexpected status code: ${statusCode}`);
+        reject(`unexpected status code: ${statusCode} ${statusMessage}`);
         return;
       }
       res.setEncoding('utf8');
@@ -344,7 +344,7 @@ function apiGetBuffer(context: HttpContext, path: string): Promise<{buffer: Buff
   return new Promise((resolve, reject) => {
     const options = Object.assign(context.defaultOptions,urlToHttpOptions(new URL(`${context.sonarrBaseUrl}/api/v3/${path}`)));
     addHeaders(options, {
-      'X-Api-Key': context.apiKey
+      'X-Api-Key': context.sonarrApiKey
     });
     context.httpInterface.get(options, (res: IncomingMessage) => {
       const { statusCode } = res;
@@ -369,7 +369,7 @@ function apiGetBuffer(context: HttpContext, path: string): Promise<{buffer: Buff
   })
 }
 
-export function getApi(sonarrBaseUrl: string, apiKey: string, defaultOptions: http.RequestOptions | https.RequestOptions = {}) {
+export function getApi(sonarrBaseUrl: string, sonarrApiKey: string, defaultOptions: http.RequestOptions | https.RequestOptions = {}) {
   const url = new URL(sonarrBaseUrl);
   const secure = url.protocol === 'https:';
   if (!secure && url.protocol !== 'http:') {
@@ -378,7 +378,7 @@ export function getApi(sonarrBaseUrl: string, apiKey: string, defaultOptions: ht
   const context = {
     httpInterface: secure ? https : http,
     sonarrBaseUrl,
-    apiKey,
+    sonarrApiKey,
     defaultOptions
   }
   return {

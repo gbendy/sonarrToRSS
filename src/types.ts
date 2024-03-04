@@ -2,15 +2,24 @@ import type { Feed } from 'feed';
 import type { HostConfigResource, SeriesResouce, WebHookPayload, getApi } from './sonarrApiV3';
 import type { Response } from 'express';
 import type { ExpressHandlebars } from 'express-handlebars';
+import type { Server } from 'node:http';
 
-export interface Config {
+export interface SonarrApiConfig {
   sonarrBaseUrl: string;
-  apiKey: string;
+  sonarrApiKey: string;
+  sonarrInsecure: boolean;
+}
+
+export interface UserConfig extends SonarrApiConfig {
   port: number;
-  host: string;
-  historyFile: string;
+  address: string;
   applicationUrl: string;
   urlBase: string;
+}
+
+export interface Config extends UserConfig {
+  historyFile: string;
+  configured: boolean;
 }
 
 export interface Event {
@@ -39,12 +48,19 @@ export interface RSSFeed {
   handlebars: ExpressHandlebars;
 }
 
+export type SonarrApi = ReturnType<typeof getApi>;
+
 export interface Context {
+  configFilename: string;
   config: Config;
-  hostConfig: HostConfigResource;
-  sonarrApi: ReturnType<typeof getApi>;
+  hostConfig?: HostConfigResource;
+  sonarrApi?: SonarrApi;
+  urlBase: string;
+  applicationUrl: string;
+  resolvedHistoryFile: string;
   history: History;
   events: Events;
   seriesData: Map<number, SeriesResourceExt>;
   feed: RSSFeed;
+  server: Server;
 }

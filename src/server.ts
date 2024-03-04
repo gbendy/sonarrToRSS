@@ -1,10 +1,12 @@
-import { Context, Event, ImageCache, SeriesResourceExt } from './types';
+import { Config, Context, Event, ImageCache, SeriesResourceExt, SonarrApiConfig } from './types';
 import { engine } from 'express-handlebars';
 import crypto from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import express, { Express, Request, Response } from 'express';
-import { WebHookPayload } from './sonarrApiV3';
+import { JSONObject, WebHookPayload } from './sonarrApiV3';
 import feed, { addEvent } from './feed';
+import { getSonarrApi, getSonarrHostConfig, isErrorWithCode, updateContextFromConfig, validateSonarrApiConfig, validateUserConfig } from './utils';
+import { writeFile } from 'node:fs/promises';
 
 /**
  * Parses the given string and returns it as an Integer.
@@ -32,6 +34,12 @@ function getSeriesImage(context: Context, series: SeriesResourceExt, filename: s
       waiting: [],
       getting: false
     });
+  }
+  if (!context.sonarrApi) {
+    // no API and we don't have the image. Just 500 it.
+    res.statusCode = 500;
+    res.end();
+    return;
   }
   const cache = series.cachedImages.get(filename) as ImageCache;
   if (cache.image) {
@@ -83,15 +91,18 @@ const eventTypePartials: Record<string, string> = {
 
 export function resolveUrlPath(context: Context, path: string)
 {
-  return `${context.config.urlBase}${path.startsWith('/') ? path.slice(1) : path}`;
+  return `${context.urlBase}${path.startsWith('/') ? path.slice(1) : path}`;
 }
 
 export function resolveApplicationUrl(context: Context, path: string)
 {
-  return `${context.config.applicationUrl}${path.startsWith('/') ? path.slice(1) : path}`;
+  return `${context.applicationUrl}${path.startsWith('/') ? path.slice(1) : path}`;
 }
 
 export async function ensureSeries(context: Context, seriesIds: Set<number>) {
+  if (!context.sonarrApi) {
+    return;
+  }
   if (seriesIds.size) {
     const promises = [];
     for (const seriesId of seriesIds) {
@@ -152,6 +163,12 @@ export function generateHelpers(context: Context) {
       const path = `banner/${seriedId}`;
       return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
     },
+    testSonarrUrl() {
+      return resolveUrlPath(context, '/api/testSonarrUrl')
+    },
+    saveConfigUrl() {
+      return resolveUrlPath(context, '/api/saveConfig')
+    },
     showBanner(event: WebHookPayload) {
       return event.series && event.eventType !== 'SeriesDelete' && event.eventType !== 'Test' && context.seriesData.has(event.series.id);
     },
@@ -170,12 +187,37 @@ export async function start(context: Context) {
   app.set('view engine', 'handlebars');
   app.set('views', './src/views');
 
+  app.use((req, res, next) => {
+    if (!context.config.configured && req.method === 'GET') {
+      res.render('config', {
+        layout: 'config',
+        context,
+        helpers
+      });
+      return;
+    }
+    next();
+  });
+
   app.get('/', (req: Request, res: Response) => {
-    res.redirect(resolveUrlPath(context, 'browse/'));
+    res.redirect(resolveUrlPath(context, 'browse'));
+  });
+
+  app.get('/config', (req: Request, res: Response) => {
+    res.render('config', {
+      layout: 'config',
+      context,
+      helpers
+    });
   });
 
   // get series banner image
   app.get('/banner/:seriesId', (req: Request, res: Response ) => {
+    if (!context.sonarrApi) {
+      res.statusCode = 500;
+      res.end();
+      return;
+    }
     const seriesId = parseInteger(req.params.seriesId, undefined);
     if (seriesId === undefined) {
       res.statusCode = 400;
@@ -187,6 +229,10 @@ export async function start(context: Context) {
 
   // History browsing
   app.get('/browse/:start?/:count?', async (req: Request, res: Response) => {
+    if (!context.sonarrApi) {
+      res.redirect(resolveUrlPath(context, 'config'));
+      return;
+    }
     // get and sanitise input parameters
     const totalEvents = context.history.length;
     const start = Math.min(Math.max(parseInteger(req.params.start, 0), 0), totalEvents-1);
@@ -280,6 +326,10 @@ export async function start(context: Context) {
   });
 
   app.get('/event/:eventId?', async (req: Request, res: Response) => {
+    if (!context.sonarrApi) {
+      res.redirect(resolveUrlPath(context, 'config'));
+      return;
+    }
     const eventId = req.params.eventId;
     const event = context.events[eventId];
     if (!event) {
@@ -331,11 +381,135 @@ export async function start(context: Context) {
     }
     addEvent(context, event);
 
-    writeFileSync(context.config.historyFile, JSON.stringify(context.history), { encoding: 'utf8' });
+    writeFileSync(context.resolvedHistoryFile, JSON.stringify(context.history), { encoding: 'utf8' });
   };
 
   app.post('/sonarr', processEvent);
   app.put('/sonarr', processEvent);
+
+  app.get('/api/ping', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.end();
+  });
+
+  app.post('/api/testSonarrUrl', express.json(), async (req, res) => {
+    const sonarrApi = req.body as SonarrApiConfig;
+    if (!validateSonarrApiConfig(sonarrApi, true)) {
+      res.statusCode = 400;
+      res.statusMessage = 'Invalid Body';
+      res.end();
+      return;
+    }
+    res.setHeader('content-type', 'application/json; charset=UTF-8');
+    try {
+      const api = getSonarrApi(sonarrApi);
+      const result = await getSonarrHostConfig(api);
+      res.write(JSON.stringify({
+        result: 'OK',
+        instanceName: result.instanceName ?? 'Sonarr'
+      }));
+      res.end();
+    } catch (message) {
+      res.write(JSON.stringify({
+        result: 'FAILED',
+        message
+      }));
+      res.end();
+    }
+  });
+
+  app.post('/api/saveConfig', express.json(), async (req, res) => {
+    const config = req.body as Config;
+    if (!validateUserConfig(config)) {
+      res.statusCode = 400;
+      res.statusMessage = 'Invalid Body';
+      res.end();
+      return;
+    }
+    res.setHeader('content-type', 'application/json; charset=UTF-8');
+    try {
+      const newConfig = { ...context.config };
+      const initialConfig = !newConfig.configured;
+
+      let changedListen = false;
+      if (newConfig.port !== config.port) {
+        newConfig.port = config.port;
+        changedListen = true;
+      }
+      if (newConfig.address !== config.address) {
+        newConfig.address = config.address;
+        changedListen = true;
+      }
+      const changedApplicationUrl = newConfig.applicationUrl !== config.applicationUrl;
+      if (changedApplicationUrl) {
+        newConfig.applicationUrl = config.applicationUrl;
+      }
+      const changedUrlBase = newConfig.urlBase !== config.urlBase;
+      if (changedUrlBase) {
+        newConfig.urlBase = config.urlBase;
+      }
+      let changedSonarrApi = false;
+      if (newConfig.sonarrBaseUrl !== config.sonarrBaseUrl) {
+        newConfig.sonarrBaseUrl = config.sonarrBaseUrl;
+        changedSonarrApi = true;
+      }
+      if (newConfig.sonarrInsecure !== config.sonarrInsecure) {
+        newConfig.sonarrInsecure = config.sonarrInsecure;
+        changedSonarrApi = true;
+      }
+      if (newConfig.sonarrApiKey !== config.sonarrApiKey) {
+        newConfig.sonarrApiKey = config.sonarrApiKey;
+        changedSonarrApi = true;
+      }
+      newConfig.configured = true;
+      const responseData: JSONObject = {
+        result: 'OK',
+      };
+      if (initialConfig || changedListen || changedApplicationUrl || changedUrlBase || changedSonarrApi) {
+        // write out new config to config file.
+        try {
+          await writeFile(context.configFilename, JSON.stringify(newConfig, null, 2), { encoding: 'utf8' });
+        } catch (e) {
+          if (isErrorWithCode(e)) {
+            // write file error, this is the only throw that should happen
+            console.error(`Config file ${context.configFilename} cannot be written. ${e.code} ${e.message}`);
+          } else if (e instanceof Error) {
+            console.error(`Config file ${context.configFilename} cannot be written. ${e.message}`)
+          } else {
+            console.error(`Config file ${context.configFilename} cannot be written. ${e}`)
+          }
+          throw 'Could not write config file';
+        }
+        // update local config
+        context.config = newConfig;
+
+        await updateContextFromConfig(context);
+
+        if (initialConfig || changedListen) {
+          // restart server
+          console.log(`Server connection configuration changed. Restarting to listen on ${newConfig.address}:${newConfig.port}`);
+          context.server.close(() => {
+            start(context);
+          });
+          responseData.reload = true;
+        } else if (changedApplicationUrl) {
+          // repopulate feed with new application url
+          await feed.init(context);
+          responseData.reload = true;
+        }
+        // other changes will be picked up immediately
+      }
+      // work out what we need to restart to use new config
+      res.write(JSON.stringify(responseData));
+      res.end();
+    } catch (message) {
+      res.write(JSON.stringify({
+        result: 'FAILED',
+        message
+      }));
+      res.end();
+    }
+  });
 
   app.get('/rss', (req: Request, res: Response) => {
     res.setHeader('content-type', 'application/xml; charset=UTF-8');
@@ -343,7 +517,7 @@ export async function start(context: Context) {
     res.end();
   });
 
-  app.listen(context.config.port, context.config.host, () => {
-    console.log(`[server]: Server is running at http://${context.config.host}:${context.config.port}`);
+  context.server = app.listen(context.config.port, context.config.address, () => {
+    console.log(`[server]: Server is running at http://${context.config.address}:${context.config.port}`);
   });
 }
