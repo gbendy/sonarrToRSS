@@ -1,22 +1,65 @@
+:root {
+  color-scheme: light dark;
+
+  --light-bg-color: #f5f7fa;
+  --light-color: black;
+  --light-pagination-active-color: #4CAF50;
+  --light-pagination-hover-color: #ddd;
+  --light-warning-color: orange;
+  --light-error-color: red;
+  --light-good-color: green;
+  --light-config-tip-color: #909293;
+  --light-box-shadow-color: rgba(0, 0, 0, 0.1);
+  --light-overlay-border-color: #333;
+  --light-anchor-hover-color: #555;
+  --light-anchor-active-color: #888;
+
+  --dark-bg-color: #1b1b1b;
+  --dark-color: AliceBlue;
+  --dark-pagination-active-color: #1C7F10;
+  --dark-pagination-hover-color: #333;
+  --dark-warning-color: #E3963E;
+  --dark-error-color: crimson;
+  --dark-good-color: green;
+  --dark-config-tip-color: #939290;
+  --dark-box-shadow-color: rgba(255, 255, 255, 0.1);
+  --dark-overlay-border-color: #ddd;
+  --dark-anchor-hover-color: #ccc;
+  --dark-anchor-active-color: #999;
+}
+
 body {
   font-family: "Roboto", "open sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-  background-color: #f5f7fa;
+  background-color: light-dark(var(--light-bg-color), var(--dark-bg-color));
+  color: light-dark(var(--light-color), var(--dark-color));
+}
+
+a {
+  color: light-dark(var(--light-color), var(--dark-color));
+}
+
+a:hover {
+  color: light-dark(var(--light-anchor-hover-color), var(--dark-anchor-hover-color));
+}
+
+a:active {
+  color: light-dark(var(--light-anchor-active-color), var(--dark-anchor-active-color));
 }
 
 span.warning {
-  color: orange;
+  color: light-dark(var(--light-warning-color), var(--dark-warning-color));
   font-weight: bold;
   text-transform: capitalize;
 }
 
 span.error {
-  color: red;
+  color: light-dark(var(--light-error-color), var(--dark-error-color));
   font-weight: bold;
   text-transform: capitalize;
 }
 
 span.good {
-  color: green;
+  color: light-dark(var(--light-good-color), var(--dark-good-color));
   font-weight: bold;
   text-transform: capitalize;
 }
@@ -84,6 +127,10 @@ footer>browse {
   padding-left: 20px;
 }
 
+footer>browse a {
+  font-weight: normal;
+}
+
 nav {
   display: flex;
   flex-direction: row;
@@ -100,7 +147,7 @@ nav {
     right: 0;
     bottom: 0;
     left: 0;
-    background-color:white;
+    background-color: light-dark(var(--dark-bg-color), var(--light-bg-color));
     opacity: .75;
     z-index: 9999999;
     display: flex;
@@ -109,12 +156,12 @@ nav {
 }
 
 #overlay message {
-  color: black;
-  background-color: white;
+  color: light-dark(var(--light-color), var(--dark-color));
+  background-color: light-dark(var(--light-bg-color), var(--dark-bg-color));
   display: flex;
   margin-top: 20px;
   padding: 8px 16px;
-  border: 2px solid #333;
+  border: 2px solid light-dark(var(--light-overlay-border-color), var(--dark-overlay-border-color));
   border-radius: 8px;
   font-weight: bold;
   font-size: 1.2em;
@@ -135,13 +182,13 @@ nav {
 }
 
 .pagination a.active {
-  background-color: #4CAF50;
+  background-color: light-dark(var(--light-pagination-active-color), var(--dark-pagination-active-color));
   color: white;
   border-radius: 5px;
 }
 
 .pagination a:hover:not(.active, .skip) {
-  background-color: #ddd;
+  background-color:  light-dark(var(--light-pagination-hover-color), var(--dark-pagination-hover-color));
 }
 
 .pagination a, .pagination a:visited, .pagination a:hover, .pagination a:active {
@@ -164,7 +211,7 @@ event {
   display: flex;
   flex-direction: row;
   
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px light-dark(var(--light-box-shadow-color), var(--dark-box-shadow-color));
   margin-bottom: 16px;
   width: 100%;
   padding-bottom: 4px;
@@ -201,7 +248,7 @@ event {
 .config event release entry.tip {
   margin-left: 166px; /* input+label margin */
   margin-top: 2px;
-  color: #909293;
+  color: light-dark(var(--light-config-tip-color), var(--dark-config-tip-color));
 }
 
 .config input,tip,button {
