@@ -30,39 +30,40 @@
 
 body {
   font-family: "Roboto", "open sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-  background-color: light-dark(var(--light-bg-color), var(--dark-bg-color));
-  color: light-dark(var(--light-color), var(--dark-color));
+  background-color: var(--light-bg-color);
+  color: var(--light-color);
 }
 
 a {
-  color: light-dark(var(--light-color), var(--dark-color));
+  color: var(--light-color);
 }
 
 a:hover {
-  color: light-dark(var(--light-anchor-hover-color), var(--dark-anchor-hover-color));
+  color: var(--light-anchor-hover-color);
 }
 
 a:active {
-  color: light-dark(var(--light-anchor-active-color), var(--dark-anchor-active-color));
+  color: var(--light-anchor-active-color);
 }
 
 span.warning {
-  color: light-dark(var(--light-warning-color), var(--dark-warning-color));
+  color: var(--light-warning-color);
   font-weight: bold;
   text-transform: capitalize;
 }
 
 span.error {
-  color: light-dark(var(--light-error-color), var(--dark-error-color));
+  color: var(--light-error-color);
   font-weight: bold;
   text-transform: capitalize;
 }
 
 span.good {
-  color: light-dark(var(--light-good-color), var(--dark-good-color));
+  color: var(--light-good-color);
   font-weight: bold;
   text-transform: capitalize;
 }
+
 
 .pointer {
   cursor: pointer;
@@ -147,7 +148,7 @@ nav {
     right: 0;
     bottom: 0;
     left: 0;
-    background-color: light-dark(var(--dark-bg-color), var(--light-bg-color));
+    background-color: var(--dark-bg-color);
     opacity: .75;
     z-index: 9999999;
     display: flex;
@@ -156,12 +157,12 @@ nav {
 }
 
 #overlay message {
-  color: light-dark(var(--light-color), var(--dark-color));
-  background-color: light-dark(var(--light-bg-color), var(--dark-bg-color));
+  color: var(--light-color);
+  background-color: var(--light-bg-color);
   display: flex;
   margin-top: 20px;
   padding: 8px 16px;
-  border: 2px solid light-dark(var(--light-overlay-border-color), var(--dark-overlay-border-color));
+  border: 2px solid var(--light-overlay-border-color);
   border-radius: 8px;
   font-weight: bold;
   font-size: 1.2em;
@@ -182,13 +183,13 @@ nav {
 }
 
 .pagination a.active {
-  background-color: light-dark(var(--light-pagination-active-color), var(--dark-pagination-active-color));
+  background-color: var(--light-pagination-active-color);
   color: white;
   border-radius: 5px;
 }
 
 .pagination a:hover:not(.active, .skip) {
-  background-color:  light-dark(var(--light-pagination-hover-color), var(--dark-pagination-hover-color));
+  background-color:  var(--light-pagination-hover-color);
 }
 
 .pagination a, .pagination a:visited, .pagination a:hover, .pagination a:active {
@@ -211,7 +212,7 @@ event {
   display: flex;
   flex-direction: row;
   
-  box-shadow: 0 2px 5px light-dark(var(--light-box-shadow-color), var(--dark-box-shadow-color));
+  box-shadow: 0 2px 5px var(--light-box-shadow-color);
   margin-bottom: 16px;
   width: 100%;
   padding-bottom: 4px;
@@ -248,8 +249,9 @@ event {
 .config event release entry.tip {
   margin-left: 166px; /* input+label margin */
   margin-top: 2px;
-  color: light-dark(var(--light-config-tip-color), var(--dark-config-tip-color));
+  color: var(--light-config-tip-color);
 }
+
 
 .config input,tip,button {
   margin-left: 16px;
@@ -338,5 +340,62 @@ event time {
 img {
   width: 100%;
   height: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: var(--dark-bg-color);
+    color: var(--dark-color);
+  }
+
+  a {
+    color: var(--dark-color);
+  }
+
+  a:hover {
+    color: var(--dark-anchor-hover-color);
+  }
+
+  a:active {
+    color: var(--dark-anchor-active-color);
+  }
+
+  span.warning {
+    color: var(--dark-warning-color);
+  }
+
+  span.error {
+    color: var(--dark-error-color);
+  }
+
+  span.good {
+    color: var(--dark-good-color);
+  }
+
+  .overlay {
+    background-color: var(--light-bg-color);
+  }
+
+  #overlay message {
+    color: var(--dark-color);
+    background-color: var(--dark-bg-color);
+    border: 2px solid var(--light-overlay-border-color);
+  }
+
+  .pagination a.active {
+    background-color: var(--dark-pagination-active-color);
+  }
+
+  .pagination a:hover:not(.active, .skip) {
+    background-color:  var(--dark-pagination-hover-color);
+  }
+
+  event {
+    box-shadow-color: 0 2px 5px var(--dark-box-shadow-color);
+  }
+
+  .config event release entry.tip {
+    color: var(--dark-config-tip-color);
+  }
 }
 
