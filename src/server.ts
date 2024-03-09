@@ -12,9 +12,7 @@ import { writeFile } from 'node:fs/promises';
  * Parses the given string and returns it as an Integer.
  * Defaults to defaultvalue if parsing fails
  */
-function parseInteger(str: string, defaultValue: number): number
-function parseInteger(str: string, defaultValue: undefined): number | undefined
-function parseInteger(str: string, defaultValue: number|undefined)
+function parseInteger<T>(str: string, defaultValue: T): number | T
 {
   const value = Number.parseInt(str);
   return Number.isNaN(value) ? defaultValue : value;
@@ -124,6 +122,9 @@ export function generateHelpers(context: Context) {
       const d = new Date(date);
       return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
     },
+    plusOne: (value: number) => {
+      return value + 1;
+    },
     eventPartial: (event: WebHookPayload) => {
       return eventTypePartials[event.eventType] ?? 'defaultType';
     },
@@ -134,10 +135,10 @@ export function generateHelpers(context: Context) {
     ascendingQuery: (ascending: boolean) => {
       return ascending ? '?sort=ascending' : ''
     },
-    browseUrl: (start: number|undefined, count: number|undefined, ascending: boolean|undefined, applicationUrl: boolean = false) => {
+    browseUrl: (pageOrId: number|string|undefined, count: number|undefined, ascending: boolean|undefined, applicationUrl: boolean = false) => {
       let path = 'browse';
-      if (start !== undefined) {
-        path += `/${start-1}`;
+      if (pageOrId !== undefined) {
+        path += `/${pageOrId}`;
         if (count !== undefined) {
           path += `/${count}`;
         }
@@ -147,16 +148,25 @@ export function generateHelpers(context: Context) {
       }
       return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
     },
-    nextUrl: (start: number, count: number, ascending: boolean, applicationUrl: boolean = false) => {
-      const path = `browse/${Math.max(start-1+count, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
+    nextUrl: (page: number, count: number, ascending: boolean, applicationUrl: boolean = false) => {
+      const path = `browse/${Math.max(page+1, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
       return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
     },
-    prevUrl: (start: number, count: number, ascending: boolean, applicationUrl: boolean = false) => {
-      const path = `browse/${Math.max(start-1-count, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
+    prevUrl: (page: number, count: number, ascending: boolean, applicationUrl: boolean = false) => {
+      const path = `browse/${Math.max(page-1, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
       return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
     },
-    eventUrl(eventId: string, applicationUrl: boolean = false) {
-      const path = `event/${eventId}`;
+    eventUrl(eventId: string, count: number|undefined, ascending: boolean|undefined, applicationUrl: boolean = false) {
+      let path = `event/${eventId}`;
+      if (count || ascending) {
+        path += '?';
+        if (count) {
+          path += `count=${count}`;
+        }
+        if (ascending) {
+          path += `${count ? '&' : ''}sort=ascending`;
+        }
+      }
       return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
     },
     bannerUrl(seriedId: string, applicationUrl: boolean = false) {
@@ -228,16 +238,35 @@ export async function start(context: Context) {
   });
 
   // History browsing
-  app.get('/browse/:start?/:count?', async (req: Request, res: Response) => {
+  app.get('/browse/:pageOrId?/:count?', async (req: Request, res: Response) => {
     if (!context.sonarrApi) {
       res.redirect(resolveUrlPath(context, 'config'));
       return;
     }
     // get and sanitise input parameters
     const totalEvents = context.history.length;
-    const start = Math.min(Math.max(parseInteger(req.params.start, 0), 0), totalEvents-1);
     const count = Math.max(parseInteger(req.params.count, 6), 1);
     const ascending = req.query.sort === 'ascending';
+    const numPages = Math.ceil(totalEvents / count);
+    const pageIsId = parseInteger(req.params.pageOrId, true);
+    let currentPage: number;
+    if (pageIsId === true) {
+      // page isn't a number so is the ID of an event.
+      // work out which page contains that event.
+      const event = context.events[req.params.pageOrId];
+      if (event) {
+        currentPage = ascending ?
+          Math.floor(event.index / count) :
+          (Math.floor((totalEvents - event.index - 1)/ count));
+      } else {
+        currentPage = 0;
+      }
+    } else {
+      // page is a number so is the current page to show
+      currentPage = Math.min(Math.max(pageIsId, 0), numPages-1);
+    }
+
+    const start = Math.min(currentPage * count, totalEvents-1);
 
     const numEvents = Math.min(totalEvents - start, count);
 
@@ -263,14 +292,12 @@ export async function start(context: Context) {
 
     // Calculate pagination data
     const end = start+count >= totalEvents ? totalEvents-1 : start + count - 1;
-    const numPages = Math.ceil(totalEvents / count);
     const pagination = [];
     const paginationCount = 9; // must be odd
-    const currentPage = Math.floor(start / count)
     function createPagination(page: number) {
       return {
         label: page + 1,
-        start: page * count + 1,
+        page: page,
         active: currentPage === page
       }
     }
@@ -308,13 +335,14 @@ export async function start(context: Context) {
       instanceName: context.hostConfig?.instanceName ?? 'Sonarr',
       events,
       ascending,
-      start: start + 1,
-      end: end + 1,
+      currentPage,
+      start: ascending ? (start + 1) : (totalEvents - start),
+      end: ascending ? (end + 1) : (totalEvents - end),
+      startEventId: events[0].id,
+      endEventId: events[events.length-1].id,
       count: count,
       first: start === 0,
       last: end + 1 === totalEvents,
-      prevCount: Math.min(start, count),
-      nextCount: Math.min(totalEvents - 1 - end, count),
       pagination,
       total: totalEvents,
       sonarrBaseUrl: context.config.sonarrBaseUrl,
@@ -330,6 +358,9 @@ export async function start(context: Context) {
       res.redirect(resolveUrlPath(context, 'config'));
       return;
     }
+    const count = parseInteger(req.query.count as string, undefined);
+    const ascending = req.query.sort === 'ascending';
+
     const eventId = req.params.eventId;
     const event = context.events[eventId];
     if (!event) {
@@ -337,7 +368,9 @@ export async function start(context: Context) {
       res.statusMessage = `Event ${eventId} not found`;
       res.render('eventnotfound', {
         eventId,
-        helpers
+        count,
+        ascending,
+        helpers,
       });
     } else {
 
@@ -346,12 +379,9 @@ export async function start(context: Context) {
       }
       res.render('event', {
         instanceName: context.hostConfig?.instanceName ?? 'Sonarr',
-        event: {
-          ...event,
-          indexDisplay: event.index + 1,
-          ascendingIndex: context.history.length - event.index - 1,
-          ascendingIndexDisplay: context.history.length - event.index
-        },
+        event,
+        count,
+        ascending,
         sonarrBaseUrl: context.config.sonarrBaseUrl,
         helpers
       });
@@ -363,7 +393,7 @@ export async function start(context: Context) {
 
   const processEvent = (req: Request, res: Response) => {
     const timestamp = Date.now();
-    const id = crypto.randomBytes(12).toString('hex');
+    const id = `e${crypto.randomBytes(12).toString('hex')}`;
     const event: Event = {
       timestamp,
       id,

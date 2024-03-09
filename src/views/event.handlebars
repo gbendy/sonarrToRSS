@@ -3,10 +3,10 @@
     <heading >Event history for <a href="{{sonarrBaseUrl}}">{{instanceName}}</a></heading>
     <events class="single">
     <header>
-      <count>Event {{event.ascendingIndexDisplay}}</count>
+      <count>Event {{plusOne event.index}}</count>
     </header>
     {{> event event useApplicationUrl=useApplicationUrl}}
-    <footer><browse><a href="{{browseUrl event.ascendingIndex undefined undefined useApplicationUrl}}">Browse</a></browse></footer>
+    <footer><browse><a href="{{browseUrl event.id count ascending useApplicationUrl}}">Browse</a></browse></footer>
     </events>
   </div>
 </div>

@@ -31,12 +31,7 @@ export async function addEvent(context: Context, event: Event) {
   try {
     const content = await context.feed.handlebars.renderView('./src/views/event.handlebars', {
       instanceName: context.hostConfig?.instanceName ?? 'Sonarr',
-      event: {
-        ...event,
-        indexDisplay: event.index + 1,
-        ascendingIndex: context.history.length - event.index - 1,
-        ascendingIndexDisplay: context.history.length - event.index
-      },
+      event,
       sonarrBaseUrl: context.config.sonarrBaseUrl,
       useApplicationUrl: true
     });
