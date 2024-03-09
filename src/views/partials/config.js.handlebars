@@ -120,7 +120,7 @@ async function testSonarr() {
   try {
     const url = isUrl(sonarrBaseUrlElement.value);
     if (!url) {
-      throw 'Sonarr Base URL is not a URL';  
+      throw 'Sonarr Base URL is not a URL';
     } else {
       if (url.protocol !== 'http:' && url.protocol !== 'https:') {
         throw 'Sonarr Base URL is not a http or https URL';
@@ -180,7 +180,7 @@ async function reloadAndRedirect(message, applicationUrl, redirectUrl) {
   const overlayMessage = document.getElementById('overlayMessage');
   overlay.classList.remove('hidden');
   overlay.classList.add('overlay');
-  
+
   startProgress(overlayMessage, message);
   const pingUrl = appendPath(applicationUrl, 'api/ping');
   async function ping() {
@@ -215,7 +215,7 @@ async function saveConfig() {
         body: JSON.stringify(config)
       }
     );
-    
+
     clearInterval(progress);
 
     if (res.ok) {
@@ -247,5 +247,4 @@ async function saveConfig() {
   } finally {
     saveConfigElement.disabled = false;
   }
-
 }

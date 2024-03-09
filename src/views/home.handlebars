@@ -15,7 +15,7 @@
         <sort> <select onChange="location.href=`{{browseUrl currentPage count undefined useApplicationUrl}}?sort=${this.value}`;">
           <option value="descending" {{ifEqual ascending false 'selected' ''}}>Newest First</option>
           <option value="ascending" {{ifEqual ascending true 'selected' ''}}>Oldest First</option>
-        </select></sort> 
+        </select></sort>
       </header>
       {{> navigation}}
       {{#each events}}
