@@ -8,7 +8,7 @@
     {{#if this.skip}}
       <a class="skip">…</a>
     {{else}}
-      <a href="{{browseUrl this.page ../count ../ascending ../useApplicationUrl}}" class="{{ifEqual this.active true 'active' ''}}">{{this.label}}</a>
+      <a {{#unless this.active }}href="{{browseUrl this.page ../count ../ascending ../useApplicationUrl}}"{{/unless}} class="{{ifEqual this.active true 'active' ''}}">{{this.label}}</a>
     {{/if}}
   {{/each}}
   <a href="{{nextUrl currentPage count ascending useApplicationUrl}}"

@@ -3,7 +3,8 @@
 
   --light-bg-color: #f5f7fa;
   --light-color: black;
-  --light-pagination-active-color: #4CAF50;
+  --light-pagination-active-color: white;
+  --light-pagination-active-bg-color: #4CAF50;
   --light-pagination-hover-color: #ddd;
   --light-warning-color: orange;
   --light-error-color: red;
@@ -16,7 +17,8 @@
 
   --dark-bg-color: #1b1b1b;
   --dark-color: AliceBlue;
-  --dark-pagination-active-color: #1C7F10;
+  --dark-pagination-active-color: white;
+  --dark-pagination-active-bg-color: #1C7F10;
   --dark-pagination-hover-color: #333;
   --dark-warning-color: #E3963E;
   --dark-error-color: crimson;
@@ -183,9 +185,13 @@ nav {
 }
 
 .pagination a.active {
-  background-color: var(--light-pagination-active-color);
-  color: white;
+  background-color: var(--light-pagination-active-bg-color);
+  color: var(--light-pagination-active-color);
   border-radius: 5px;
+}
+
+.pagination a.active, .pagination a.skip {
+  cursor: default;
 }
 
 .pagination a:hover:not(.active, .skip) {
@@ -380,7 +386,8 @@ img {
   }
 
   .pagination a.active {
-    background-color: var(--dark-pagination-active-color);
+    background-color: var(--dark-pagination-active-bg-color);
+    color: var(--dark-pagination-active-color);
   }
 
   .pagination a:hover:not(.active, .skip) {
