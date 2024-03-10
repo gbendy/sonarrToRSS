@@ -12,9 +12,9 @@
               <entry><span class="label">Listen Address</span><input id="address" value="{{context.config.address}}"></entry>
               <entry class="tip"><span id= "addressMessage">* Address this server listens on</span></entry>
               <entry><span class="label">Application URL</span><input id="applicationUrl" value="{{context.config.applicationUrl}}"></entry>
-              <entry class="tip"><span id= "applicationUrlMessage">* Public URL to access this server. This is prefixed to links in the RSS feed{{#unless context.config.configured}}<br><i>The above is a default. Verify and change if necessary</i>{{/unless}}</span></entry>
+              <entry class="tip"><span id= "applicationUrlMessage">* Public URL to access this server. This is used for links in the feed{{#unless context.config.configured}}<br><i>The above is a default. Verify and change if necessary</i>{{/unless}}</span></entry>
               <entry><span class="label">URL Base</span><input id="urlBase" value="{{context.config.urlBase}}"></entry>
-              <entry class="tip"><span id= "urlBaseMessage">If behind a path based reverse proxy the path to prefix to relative URLs</span></entry>
+              <entry class="tip"><span id= "urlBaseMessage">If behind a path based reverse proxy the path to prefix to local URLs</span></entry>
             </release>
           </detail>
         </data>
@@ -32,6 +32,24 @@
               <entry class="tip"><span id= "sonarrApiKeyMessage">API key for the Sonarr application we are processing web hooks for</span></entry>
               <entry><button id="testSonarr" type="button" onclick="testSonarr()">Test</button></entry>
               <entry class="tip"><span id="testSonarrResult">{{#if context.hostConfig.instanceName}}Connected to {{context.hostConfig.instanceName}}{{else}}Sonarr not found{{/if}}</span></entry>
+            </release>
+          </detail>
+        </data>
+      </event>
+      <event>
+        <data>
+          <detail>
+            <episode class="noseries">Feed</episode>
+            <release>
+              <entry><span class="label">Theme</span>
+                <select id ="feedTheme">
+                  <option {{ifEqual context.config.feedTheme 'auto' 'selected' ''}} value="auto">Auto</option>
+                  <option {{ifEqual context.config.feedTheme 'light' 'selected' ''}} value="light">Light</option>
+                  <option {{ifEqual context.config.feedTheme 'dark' 'selected' ''}} value="dark">Dark</option>
+                </select>
+              </entry>
+              <entry class="tip"><span id= "feedThemeMessage">Theme for feed. Auto will attempt to use the theme specified in the reader.
+                Some readers do not support auto theme in messages so the theme can be overridden here.</span></entry>
             </release>
           </detail>
         </data>

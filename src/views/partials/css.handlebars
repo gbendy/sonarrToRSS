@@ -1,5 +1,5 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: {{colorScheme forFeed}};
 
   --light-bg-color: #f5f7fa;
   --light-color: black;
@@ -32,40 +32,39 @@
 
 body {
   font-family: "Roboto", "open sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-  background-color: var(--light-bg-color);
-  color: var(--light-color);
+  background-color: {{defaultColor 'bg-color' forFeed}};
+  color: {{defaultColor 'color' forFeed}};
 }
 
 a {
-  color: var(--light-color);
+  color: {{defaultColor 'color' forFeed}};
 }
 
 a:hover {
-  color: var(--light-anchor-hover-color);
+  color: {{defaultColor 'anchor-hover-color' forFeed}};
 }
 
 a:active {
-  color: var(--light-anchor-active-color);
+  color: {{defaultColor 'anchor-active-color' forFeed}};
 }
 
 span.warning {
-  color: var(--light-warning-color);
+  color: {{defaultColor 'warning-color' forFeed}};
   font-weight: bold;
   text-transform: capitalize;
 }
 
 span.error {
-  color: var(--light-error-color);
+  color: {{defaultColor 'error-color' forFeed}};
   font-weight: bold;
   text-transform: capitalize;
 }
 
 span.good {
-  color: var(--light-good-color);
+  color: {{defaultColor 'good-color' forFeed}};
   font-weight: bold;
   text-transform: capitalize;
 }
-
 
 .pointer {
   cursor: pointer;
@@ -150,7 +149,7 @@ nav {
     right: 0;
     bottom: 0;
     left: 0;
-    background-color: var(--dark-bg-color);
+    background-color: {{defaultColorInvert 'bg-color' forFeed}};
     opacity: .75;
     z-index: 9999999;
     display: flex;
@@ -159,12 +158,12 @@ nav {
 }
 
 #overlay message {
-  color: var(--light-color);
-  background-color: var(--light-bg-color);
+  color: {{defaultColor 'color' forFeed}};
+  background-color: {{defaultColor 'bg-color' forFeed}};
   display: flex;
   margin-top: 20px;
   padding: 8px 16px;
-  border: 2px solid var(--light-overlay-border-color);
+  border: 2px solid {{defaultColor 'overlay-border-color' forFeed}};
   border-radius: 8px;
   font-weight: bold;
   font-size: 1.2em;
@@ -185,8 +184,8 @@ nav {
 }
 
 .pagination a.active {
-  background-color: var(--light-pagination-active-bg-color);
-  color: var(--light-pagination-active-color);
+  background-color: {{defaultColor 'pagination-active-bg-color' forFeed}};
+  color: {{defaultColor 'pagination-active-color' forFeed}};
   border-radius: 5px;
 }
 
@@ -195,7 +194,7 @@ nav {
 }
 
 .pagination a:hover:not(.active, .skip) {
-  background-color:  var(--light-pagination-hover-color);
+  background-color: {{defaultColor 'pagination-hover-color' forFeed}};
 }
 
 .pagination a, .pagination a:visited, .pagination a:hover, .pagination a:active {
@@ -217,7 +216,7 @@ nav next {
 event {
   display: flex;
   flex-direction: row;
-  box-shadow: 0 2px 5px var(--light-box-shadow-color);
+  box-shadow: 0 2px 5px {{defaultColor 'box-shadow-color' forFeed}};
   margin-bottom: 16px;
   width: 100%;
   padding-bottom: 4px;
@@ -253,12 +252,13 @@ event {
 
 .config event release entry.tip {
   margin-left: 166px; /* input+label margin */
+  max-width: 484px; /* 650 - 166 */
   margin-top: 2px;
-  color: var(--light-config-tip-color);
+  color: {{defaultColor 'config-tip-color' forFeed}};
 }
 
 
-.config input,tip,button {
+.config input,tip,button,select {
   margin-left: 16px;
   padding: 6px 16px;
   flex: auto;
@@ -343,6 +343,64 @@ event time {
 img {
   width: 100%;
   height: auto;
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    background-color: var(--light-bg-color);
+    color: var(--light-color);
+  }
+
+  a {
+    color: var(--light-color);
+  }
+
+  a:hover {
+    color: var(--light-anchor-hover-color);
+  }
+
+  a:active {
+    color: var(--light-anchor-active-color);
+  }
+
+  span.warning {
+    color: var(--light-warning-color);
+  }
+
+  span.error {
+    color: var(--light-error-color);
+  }
+
+  span.good {
+    color: var(--light-good-color);
+  }
+
+  .overlay {
+    background-color: var(--dark-bg-color);
+  }
+
+  #overlay message {
+    color: var(--light-color);
+    background-color: var(--light-bg-color);
+    border: 2px solid var(--light-overlay-border-color);
+  }
+
+  .pagination a.active {
+    background-color: var(--light-pagination-active-bg-color);
+    color: var(--light-pagination-active-color);
+  }
+
+  .pagination a:hover:not(.active, .skip) {
+    background-color:  var(--light-pagination-hover-color);
+  }
+
+  event {
+    box-shadow-color: 0 2px 5px var(--light-box-shadow-color);
+  }
+
+  .config event release entry.tip {
+    color: var(--light-config-tip-color);
+  }
 }
 
 @media (prefers-color-scheme: dark) {

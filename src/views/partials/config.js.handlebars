@@ -57,6 +57,10 @@ function elementIsHttpUrlOrEmptyString(element) {
   return elementIsHttpUrl(element) || (elementIsString(element) && element.value === '');
 }
 
+function elementIsOneOf(values, element) {
+  return values.some(value => value = element.value);
+}
+
 function validate(elementId, validationFunction, getFunction) {
   const element = document.getElementById(elementId);
   const messageElement = document.getElementById(elementId + 'Message');
@@ -89,9 +93,10 @@ function validateConfig() {
   const [ sonarrBaseUrlValid, sonarrBaseUrl ] = validate('sonarrBaseUrl', elementIsHttpUrlOrEmptyString, elementGetString);
   const [ sonarrInsecureValid, sonarrInsecure ] = validate('sonarrInsecure', elementIsBoolean, elementGetBoolean);
   const [ sonarrApiKeyValid, sonarrApiKey ] = validate('sonarrApiKey', elementIsString, elementGetString);
+  const [ feedThemeValid, feedTheme ] = validate('feedTheme', elementIsOneOf.bind(null, [ 'auto', 'light', 'dark' ]), elementGetString);
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
-    !sonarrApiKeyValid || !sonarrApiKeyValid) {
+    !sonarrApiKeyValid || !sonarrApiKeyValid || !feedThemeValid) {
     throw 'Invalid Configuration';
   }
   return {
@@ -101,7 +106,8 @@ function validateConfig() {
     urlBase,
     sonarrBaseUrl,
     sonarrInsecure,
-    sonarrApiKey
+    sonarrApiKey,
+    feedTheme
   }
 }
 

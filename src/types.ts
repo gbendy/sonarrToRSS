@@ -15,6 +15,7 @@ export interface UserConfig extends SonarrApiConfig {
   address: string;
   applicationUrl: string;
   urlBase: string;
+  feedTheme: 'auto' | 'light' | 'dark'
 }
 
 export interface Config extends UserConfig {

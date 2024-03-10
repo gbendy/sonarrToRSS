@@ -33,7 +33,8 @@ export async function addEvent(context: Context, event: Event) {
       instanceName: context.hostConfig?.instanceName ?? 'Sonarr',
       event,
       sonarrBaseUrl: context.config.sonarrBaseUrl,
-      useApplicationUrl: true
+      useApplicationUrl: true,
+      forFeed: true
     });
     context.feed.feed.addItem({
       title: eventTitle(event.event),

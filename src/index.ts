@@ -13,6 +13,7 @@ const defaultConfig: Config = {
   historyFile: './history.json',
   applicationUrl: '',
   urlBase: '',
+  feedTheme: 'auto',
   configured: false
 };
 

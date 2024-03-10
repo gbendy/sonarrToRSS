@@ -174,16 +174,31 @@ export function generateHelpers(context: Context) {
       return applicationUrl ? resolveApplicationUrl(context, path) : resolveUrlPath(context, path);
     },
     testSonarrUrl() {
-      return resolveUrlPath(context, '/api/testSonarrUrl')
+      return resolveUrlPath(context, '/api/testSonarrUrl');
     },
     saveConfigUrl() {
-      return resolveUrlPath(context, '/api/saveConfig')
+      return resolveUrlPath(context, '/api/saveConfig');
     },
     showBanner(event: WebHookPayload) {
       return event.series && event.eventType !== 'SeriesDelete' && event.eventType !== 'Test' && context.seriesData.has(event.series.id);
     },
     ifEqual: (lhs: any, rhs: any, isTrue: any, isFalse: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       return lhs == rhs ? isTrue : isFalse;
+    },
+    colorScheme(forFeed: boolean) {
+      if (forFeed) {
+        return context.config.feedTheme === 'auto' ? 'light dark' : context.config.feedTheme;
+      } else {
+        return 'light dark';
+      }
+    },
+    defaultColor(color: string, forFeed: boolean) {
+      const isLight = !forFeed || context.config.feedTheme !== 'dark';
+      return `var(--${isLight ? 'light' : 'dark'}-${color})`;
+    },
+    defaultColorInvert(color: string, forFeed: boolean) {
+      const isDark = !forFeed || context.config.feedTheme !== 'dark';
+      return `var(--${isDark ? 'dark' : 'light'}-${color})`;
     }
   };
 }
@@ -470,9 +485,11 @@ export async function start(context: Context) {
         newConfig.address = config.address;
         changedListen = true;
       }
+      let regenerateFeed = false;
       const changedApplicationUrl = newConfig.applicationUrl !== config.applicationUrl;
       if (changedApplicationUrl) {
         newConfig.applicationUrl = config.applicationUrl;
+        regenerateFeed = true;
       }
       const changedUrlBase = newConfig.urlBase !== config.urlBase;
       if (changedUrlBase) {
@@ -491,11 +508,15 @@ export async function start(context: Context) {
         newConfig.sonarrApiKey = config.sonarrApiKey;
         changedSonarrApi = true;
       }
+      if (newConfig.feedTheme !== config.feedTheme) {
+        newConfig.feedTheme = config.feedTheme;
+        regenerateFeed = true;
+      }
       newConfig.configured = true;
       const responseData: JSONObject = {
         result: 'OK',
       };
-      if (initialConfig || changedListen || changedApplicationUrl || changedUrlBase || changedSonarrApi) {
+      if (initialConfig || changedListen || changedApplicationUrl || changedUrlBase || changedSonarrApi || regenerateFeed) {
         // write out new config to config file.
         try {
           await writeFile(context.configFilename, JSON.stringify(newConfig, null, 2), { encoding: 'utf8' });
@@ -516,16 +537,19 @@ export async function start(context: Context) {
         await updateContextFromConfig(context);
 
         if (initialConfig || changedListen) {
-          // restart server
+          // restart server, will also restart feed
           console.log(`Server connection configuration changed. Restarting to listen on ${newConfig.address}:${newConfig.port}`);
           context.server.close(() => {
             start(context);
           });
           responseData.reload = true;
-        } else if (changedApplicationUrl) {
-          // repopulate feed with new application url
-          await feed.init(context);
-          responseData.reload = true;
+        } else {
+          if (changedApplicationUrl) {
+            responseData.reload = true;
+          }
+          if (regenerateFeed) {
+            await feed.init(context);
+          }
         }
         // other changes will be picked up immediately
       }

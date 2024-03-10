@@ -41,7 +41,8 @@ export function validateSonarrApiConfig(config: SonarrApiConfig, strict: boolean
 export function validateUserConfig(config: Config) {
   return validateSonarrApiConfig(config, false) &&
     isNumber(config?.port) && isString(config?.address) &&
-    isHttpUrl(config?.applicationUrl) && isString(config?.urlBase)
+    isHttpUrl(config?.applicationUrl) && isString(config?.urlBase) &&
+    (config?.feedTheme === 'auto' || config?.feedTheme === 'light' || config?.feedTheme === 'dark');
 }
 
 export const sonarrApiKeys = [ 'sonarrBaseUrl', 'sonarrApiKey' , 'sonarrInsecure' ];
