@@ -15,7 +15,8 @@ module.exports = tseslint.config(
       '@/eol-last': ['error', 'always'],
       '@/quotes': [ 'error', 'single' ],
       'camelcase': [ 'error' ],
-      'no-trailing-spaces': [ 'error']
+      'no-trailing-spaces': [ 'error'],
+      'semi': ['error', 'always']
     }
   },
   {

@@ -61,7 +61,7 @@ function getSeriesImage(context: Context, series: SeriesResourceExt, filename: s
         waitingRes.end();
       }
       cache.waiting.length = 0;
-    })
+    });
   }
 }
 
@@ -133,7 +133,7 @@ export function generateHelpers(context: Context) {
       return (value / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'KB', 'MB', 'GB', 'TB'][i];
     },
     ascendingQuery: (ascending: boolean) => {
-      return ascending ? '?sort=ascending' : ''
+      return ascending ? '?sort=ascending' : '';
     },
     browseUrl: (pageOrId: number|string|undefined, count: number|undefined, ascending: boolean|undefined, applicationUrl: boolean = false) => {
       let path = 'browse';
@@ -314,7 +314,7 @@ export async function start(context: Context) {
         label: page + 1,
         page: page,
         active: currentPage === page
-      }
+      };
     }
     if (numPages < paginationCount) {
       for (let i=0; i<numPages; i++) {
@@ -525,9 +525,9 @@ export async function start(context: Context) {
             // write file error, this is the only throw that should happen
             console.error(`Config file ${context.configFilename} cannot be written. ${e.code} ${e.message}`);
           } else if (e instanceof Error) {
-            console.error(`Config file ${context.configFilename} cannot be written. ${e.message}`)
+            console.error(`Config file ${context.configFilename} cannot be written. ${e.message}`);
           } else {
-            console.error(`Config file ${context.configFilename} cannot be written. ${e}`)
+            console.error(`Config file ${context.configFilename} cannot be written. ${e}`);
           }
           throw 'Could not write config file';
         }

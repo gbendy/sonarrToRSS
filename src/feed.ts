@@ -85,4 +85,4 @@ export async function init(context: Context) {
 
 export default {
   init, addEvent
-}
+};

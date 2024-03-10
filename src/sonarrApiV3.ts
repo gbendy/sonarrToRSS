@@ -337,7 +337,7 @@ function apiGetJson<JsonType=JSONValue>(context: HttpContext, path: string): Pro
     }).on('error', (e) => {
       reject(e.message);
     });
-  })
+  });
 }
 
 function apiGetBuffer(context: HttpContext, path: string): Promise<{buffer: Buffer, contentType?: string}> {
@@ -366,7 +366,7 @@ function apiGetBuffer(context: HttpContext, path: string): Promise<{buffer: Buff
     }).on('error', (e) => {
       reject(e.message);
     });
-  })
+  });
 }
 
 export function getApi(sonarrBaseUrl: string, sonarrApiKey: string, defaultOptions: http.RequestOptions | https.RequestOptions = {}) {
@@ -380,7 +380,7 @@ export function getApi(sonarrBaseUrl: string, sonarrApiKey: string, defaultOptio
     sonarrBaseUrl,
     sonarrApiKey,
     defaultOptions
-  }
+  };
   return {
     getJson: apiGetJson.bind(global, context) as <JsonType=JSONValue>(path: string) => Promise<JsonType>,
     getBuffer: apiGetBuffer.bind(global, context)
