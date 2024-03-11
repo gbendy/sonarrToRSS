@@ -2,6 +2,9 @@ import { Item } from 'feed';
 import { Context, Event } from './types';
 import { generateHelpers, resolveApplicationUrl } from './server';
 import { create } from 'express-handlebars';
+import { forCategory } from './logger';
+
+const logger = forCategory('feed');
 
 type HealthTimer = {
   timer: ReturnType<typeof setTimeout>;
@@ -83,16 +86,16 @@ export class FeedEventManager {
   #registerDelayedHealthEvent(id: string, event: Event, historic: boolean=false) {
     if (historic) {
       const historicDelay = Math.ceil(this.#context.config.feedHealthDelay - toMinutes(Date.now() - event.timestamp));
-      console.log(`Delaying historic health event '${id}' for ${historicDelay} more minutes`);
+      logger.info(`Delaying historic health event '${id}' for ${historicDelay} more minutes`);
     } else {
-      console.log(`Delaying feed health event '${id}' for ${this.#context.config.feedHealthDelay} minutes`);
+      logger.info(`Delaying feed health event '${id}' for ${this.#context.config.feedHealthDelay} minutes`);
 
     }
     this.#delayedHealthEvents.set(id, {
       startTime: event.timestamp,
       timer: setTimeout(async () => {
         // delay timed out
-        console.log(`Health event '${id}' did not receive restore event within ${this.#context.config.feedHealthDelay} minutes so sending to feed`);
+        logger.info(`Health event '${id}' did not receive restore event within ${this.#context.config.feedHealthDelay} minutes so sending to feed`);
         this.#delayedHealthEvents.delete(id);
         this.addEvent(event);
       }, fromMinutes(this.#context.config.feedHealthDelay) - (Date.now() - event.timestamp))
@@ -140,7 +143,7 @@ export class FeedEventManager {
         // Clear and remove the timer so that the health event doesn't get
         // sent either.
         const time = Math.ceil(toMinutes(event.timestamp - healthEventTimer.startTime));
-        console.log(`Health event '${id}' restored after ${time} minutes`);
+        logger.info(`Health event '${id}' restored after ${time} minutes`);
 
         clearTimeout(healthEventTimer.timer);
         this.#delayedHealthEvents.delete(id);

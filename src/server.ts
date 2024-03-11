@@ -6,7 +6,10 @@ import express, { Express, Request, Response } from 'express';
 import { JSONObject, WebHookPayload } from './sonarrApiV3';
 import feed from './feed';
 import { HealthTypes, arraysEqual, getSonarrApi, getSonarrHostConfig, isErrorWithCode, updateContextFromConfig, validateSonarrApiConfig, validateUserConfig } from './utils';
+import { forCategory } from './logger';
 import { writeFile } from 'node:fs/promises';
+
+const logger = forCategory('server');
 
 /**
  * Parses the given string and returns it as an Integer.
@@ -111,7 +114,7 @@ export async function ensureSeries(context: Context, seriesIds: Set<number>) {
     }
 
     return Promise.all(promises).catch((e) => {
-      console.log(`Error retrieving series data ${e}`);
+      logger.info(`Error retrieving series data ${e}`);
     });
   }
 }
@@ -421,7 +424,7 @@ export async function start(context: Context) {
     };
     context.history.push(event);
     context.events[event.id] = event;
-    console.log(`New event: ${event.event.eventType}`);
+    logger.info(`New event: ${event.event.eventType}`);
     res.status(200);
     res.end('ok');
 
@@ -431,7 +434,7 @@ export async function start(context: Context) {
     try {
       await context.feed.eventManager.processNew(event);
     } catch (e) {
-      console.log(`Error sending event to feed: ${e}`);
+      logger.info(`Error sending event to feed: ${e}`);
     }
 
     writeFileSync(context.resolvedHistoryFile, JSON.stringify(context.history), { encoding: 'utf8' });
@@ -539,11 +542,11 @@ export async function start(context: Context) {
         } catch (e) {
           if (isErrorWithCode(e)) {
             // write file error, this is the only throw that should happen
-            console.error(`Config file ${context.configFilename} cannot be written. ${e.code} ${e.message}`);
+            logger.info(`Config file ${context.configFilename} cannot be written. ${e.code} ${e.message}`);
           } else if (e instanceof Error) {
-            console.error(`Config file ${context.configFilename} cannot be written. ${e.message}`);
+            logger.info(`Config file ${context.configFilename} cannot be written. ${e.message}`);
           } else {
-            console.error(`Config file ${context.configFilename} cannot be written. ${e}`);
+            logger.info(`Config file ${context.configFilename} cannot be written. ${e}`);
           }
           throw 'Could not write config file';
         }
@@ -554,7 +557,7 @@ export async function start(context: Context) {
 
         if (initialConfig || changedListen) {
           // restart server, will also restart feed
-          console.log(`Server connection configuration changed. Restarting to listen on ${newConfig.address}:${newConfig.port}`);
+          logger.info(`Server connection configuration changed. Restarting to listen on ${newConfig.address}:${newConfig.port}`);
           context.server.close(() => {
             start(context);
           });
@@ -588,6 +591,6 @@ export async function start(context: Context) {
   });
 
   context.server = app.listen(context.config.port, context.config.address, () => {
-    console.log(`[server]: Server is running at http://${context.config.address}:${context.config.port}`);
+    logger.info(`Server is running at http://${context.config.address}:${context.config.port}`);
   });
 }

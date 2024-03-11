@@ -1,8 +1,11 @@
 import { Config, Context, Events, SeriesResourceExt } from './types';
 import { start } from './server';
 import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { isErrorWithCode, updateContextFromConfig } from './utils';
+import { forCategory } from './logger';
+import path from 'node:path';
+
+const logger = forCategory('startup');
 
 const defaultConfig: Config = {
   port: 18989,
@@ -65,16 +68,16 @@ function loadHistory(context: Context): Promise<Context> {
     if (isErrorWithCode(e)) {
       // readFile error, no file is OK since we assume no events have been processed yet
       if (e.code !== 'ENOENT') {
-        console.warn(`History file ${context.resolvedHistoryFile} cannot be read. ${e.message}`);
-        console.warn('Starting with empty history');
+        logger.warn(`History file ${context.resolvedHistoryFile} cannot be read. ${e.message}`);
+        logger.warn('Starting with empty history');
       }
     } else if (e instanceof Error) {
       // JSON parse error
-      console.warn(`History file ${context.resolvedHistoryFile} cannot be read. ${e.message}`);
-      console.warn('Starting with empty history');
+      logger.warn(`History file ${context.resolvedHistoryFile} cannot be read. ${e.message}`);
+      logger.warn('Starting with empty history');
     } else {
-      console.warn(`History file ${context.resolvedHistoryFile} cannot be read. ${e}`);
-      console.warn('Starting with empty history');
+      logger.warn(`History file ${context.resolvedHistoryFile} cannot be read. ${e}`);
+      logger.warn('Starting with empty history');
     }
 
     context.history = [];
@@ -83,7 +86,7 @@ function loadHistory(context: Context): Promise<Context> {
 }
 
 loadConfig().then(loadHistory).then(start).catch(e => {
-  console.error(e);
-  console.error('Fatal startup error, exiting');
+  logger.error(e);
+  logger.error('Fatal startup error, exiting');
   process.exit(-1);
 });
