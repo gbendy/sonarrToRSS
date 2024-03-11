@@ -1,8 +1,8 @@
 import type { Feed } from 'feed';
 import type { HostConfigResource, SeriesResouce, WebHookPayload, getApi } from './sonarrApiV3';
 import type { Response } from 'express';
-import type { ExpressHandlebars } from 'express-handlebars';
 import type { Server } from 'node:http';
+import { FeedEventManager } from './feedEventManager';
 
 export interface SonarrApiConfig {
   sonarrBaseUrl: string;
@@ -15,7 +15,9 @@ export interface UserConfig extends SonarrApiConfig {
   address: string;
   applicationUrl: string;
   urlBase: string;
-  feedTheme: 'auto' | 'light' | 'dark'
+  feedTheme: 'auto' | 'light' | 'dark',
+  feedHealthDelay: number,
+  feedHealthDelayTypes: Array<string>
 }
 
 export interface Config extends UserConfig {
@@ -46,7 +48,7 @@ export interface SeriesResourceExt extends SeriesResouce {
 
 export interface RSSFeed {
   feed: Feed;
-  handlebars: ExpressHandlebars;
+  eventManager: FeedEventManager;
 }
 
 export type SonarrApi = ReturnType<typeof getApi>;

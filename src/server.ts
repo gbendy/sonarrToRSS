@@ -4,8 +4,8 @@ import crypto from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import express, { Express, Request, Response } from 'express';
 import { JSONObject, WebHookPayload } from './sonarrApiV3';
-import feed, { addEvent } from './feed';
-import { getSonarrApi, getSonarrHostConfig, isErrorWithCode, updateContextFromConfig, validateSonarrApiConfig, validateUserConfig } from './utils';
+import feed from './feed';
+import { HealthTypes, arraysEqual, getSonarrApi, getSonarrHostConfig, isErrorWithCode, updateContextFromConfig, validateSonarrApiConfig, validateUserConfig } from './utils';
 import { writeFile } from 'node:fs/promises';
 
 /**
@@ -185,6 +185,9 @@ export function generateHelpers(context: Context) {
     ifEqual: (lhs: any, rhs: any, isTrue: any, isFalse: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       return lhs == rhs ? isTrue : isFalse;
     },
+    ifInArray: (value:any, array: Array<any>, isFound: any, isNotFound: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      return array.findIndex(element => value === element) < 0 ? isNotFound : isFound;
+    },
     colorScheme(forFeed: boolean) {
       if (forFeed) {
         return context.config.feedTheme === 'auto' ? 'light dark' : context.config.feedTheme;
@@ -232,6 +235,7 @@ export async function start(context: Context) {
     res.render('config', {
       layout: 'config',
       context,
+      healthTypes: HealthTypes,
       helpers
     });
   });
@@ -406,7 +410,7 @@ export async function start(context: Context) {
   // Process webhooks from Sonarr
   app.use('/sonarr', express.json());
 
-  const processEvent = (req: Request, res: Response) => {
+  const processEvent = async (req: Request, res: Response) => {
     const timestamp = Date.now();
     const id = `e${crypto.randomBytes(12).toString('hex')}`;
     const event: Event = {
@@ -417,14 +421,18 @@ export async function start(context: Context) {
     };
     context.history.push(event);
     context.events[event.id] = event;
-    console.log(`New activity: ${event.event.eventType}`);
+    console.log(`New event: ${event.event.eventType}`);
     res.status(200);
     res.end('ok');
 
     if (event.event.series?.id !== undefined && !context.seriesData.has(event.event.series.id)) {
       ensureSeries(context, new Set([ event.event.series?.id]));
     }
-    addEvent(context, event);
+    try {
+      await context.feed.eventManager.processNew(event);
+    } catch (e) {
+      console.log(`Error sending event to feed: ${e}`);
+    }
 
     writeFileSync(context.resolvedHistoryFile, JSON.stringify(context.history), { encoding: 'utf8' });
   };
@@ -464,8 +472,8 @@ export async function start(context: Context) {
   });
 
   app.post('/api/saveConfig', express.json(), async (req, res) => {
-    const config = req.body as Config;
-    if (!validateUserConfig(config)) {
+    const postedConfig = req.body as Config;
+    if (!validateUserConfig(postedConfig)) {
       res.statusCode = 400;
       res.statusMessage = 'Invalid Body';
       res.end();
@@ -477,39 +485,47 @@ export async function start(context: Context) {
       const initialConfig = !newConfig.configured;
 
       let changedListen = false;
-      if (newConfig.port !== config.port) {
-        newConfig.port = config.port;
+      if (newConfig.port !== postedConfig.port) {
+        newConfig.port = postedConfig.port;
         changedListen = true;
       }
-      if (newConfig.address !== config.address) {
-        newConfig.address = config.address;
+      if (newConfig.address !== postedConfig.address) {
+        newConfig.address = postedConfig.address;
         changedListen = true;
       }
       let regenerateFeed = false;
-      const changedApplicationUrl = newConfig.applicationUrl !== config.applicationUrl;
+      const changedApplicationUrl = newConfig.applicationUrl !== postedConfig.applicationUrl;
       if (changedApplicationUrl) {
-        newConfig.applicationUrl = config.applicationUrl;
+        newConfig.applicationUrl = postedConfig.applicationUrl;
         regenerateFeed = true;
       }
-      const changedUrlBase = newConfig.urlBase !== config.urlBase;
+      const changedUrlBase = newConfig.urlBase !== postedConfig.urlBase;
       if (changedUrlBase) {
-        newConfig.urlBase = config.urlBase;
+        newConfig.urlBase = postedConfig.urlBase;
       }
       let changedSonarrApi = false;
-      if (newConfig.sonarrBaseUrl !== config.sonarrBaseUrl) {
-        newConfig.sonarrBaseUrl = config.sonarrBaseUrl;
+      if (newConfig.sonarrBaseUrl !== postedConfig.sonarrBaseUrl) {
+        newConfig.sonarrBaseUrl = postedConfig.sonarrBaseUrl;
         changedSonarrApi = true;
       }
-      if (newConfig.sonarrInsecure !== config.sonarrInsecure) {
-        newConfig.sonarrInsecure = config.sonarrInsecure;
+      if (newConfig.sonarrInsecure !== postedConfig.sonarrInsecure) {
+        newConfig.sonarrInsecure = postedConfig.sonarrInsecure;
         changedSonarrApi = true;
       }
-      if (newConfig.sonarrApiKey !== config.sonarrApiKey) {
-        newConfig.sonarrApiKey = config.sonarrApiKey;
+      if (newConfig.sonarrApiKey !== postedConfig.sonarrApiKey) {
+        newConfig.sonarrApiKey = postedConfig.sonarrApiKey;
         changedSonarrApi = true;
       }
-      if (newConfig.feedTheme !== config.feedTheme) {
-        newConfig.feedTheme = config.feedTheme;
+      if (newConfig.feedTheme !== postedConfig.feedTheme) {
+        newConfig.feedTheme = postedConfig.feedTheme;
+        regenerateFeed = true;
+      }
+      if (newConfig.feedHealthDelay !== postedConfig.feedHealthDelay) {
+        newConfig.feedHealthDelay = postedConfig.feedHealthDelay;
+        regenerateFeed = true;
+      }
+      if (!arraysEqual(newConfig.feedHealthDelayTypes, postedConfig.feedHealthDelayTypes)) {
+        newConfig.feedHealthDelayTypes = postedConfig.feedHealthDelayTypes;
         regenerateFeed = true;
       }
       newConfig.configured = true;

@@ -1,11 +1,19 @@
 
 const isConfigured = {{context.config.configured}};
 
-if (!isConfigured) {
-  window.onload = () => {
+window.onload = () => {
+  if (!isConfigured) {
     document.getElementById('applicationUrl').value = document.location.href;
-  };
-}
+  }
+
+  const delayTypes = document.getElementById('feedHealthDelayTypes');
+  [...delayTypes.options].forEach(option => {
+    if (option.attributes.getNamedItem('data-selected')) {
+      option.selected = true;
+    }
+  });
+};
+
 function startProgress(element, prefix, animation = ['⠁','⠂','⠄','⡀','⢀','⠠','⠐','⠈'], interval = 500) {
   let count = 1;
   const animationLength = animation.length;
@@ -37,7 +45,28 @@ function elementIsNonEmptyString(element) {
 }
 
 function elementIsInteger(element) {
-  return elementIsString(element) && !Number.isNaN(Number.parseInt(element.value, 10));
+  return elementIsString(element) && /^[+-]?[0-9]+$/.test(element.value) && !Number.isNaN(Number.parseInt(element.value, 10));
+}
+
+function elementIsInRange(min, max, element) {
+  if (elementIsInteger(element)) {
+    const value = elementGetInteger(element);
+    if (value >= min && value <= max) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+function elementIsGTE(min, element) {
+  if (elementIsInteger(element)) {
+    const value = elementGetInteger(element);
+    if (value >= min) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function elementIsBoolean(element) {
@@ -59,6 +88,11 @@ function elementIsHttpUrlOrEmptyString(element) {
 
 function elementIsOneOf(values, element) {
   return values.some(value => value = element.value);
+}
+
+function elementHasSelection(element) {
+  const selected = element.selectedOptions;
+  return selected.length > 0;
 }
 
 function validate(elementId, validationFunction, getFunction) {
@@ -85,8 +119,17 @@ function elementGetBoolean(element) {
   return element.checked
 }
 
+function elementGetSelections(element) {
+  const selected = element.selectedOptions;
+  const result = [];
+  for (let i=0; i < selected.length; ++i) {
+    result.push(selected.item(i).value);
+  };
+  return result;
+}
+
 function validateConfig() {
-  const [ portValid, port ] = validate('port', elementIsInteger, elementGetInteger);
+  const [ portValid, port ] = validate('port', elementIsInRange.bind(null, 1, 65535), elementGetInteger);
   const [ addressValid, address ] = validate('address', elementIsNonEmptyString, elementGetString);
   const [ applicationUrlValid, applicationUrl ] = validate('applicationUrl', elementIsHttpUrl, elementGetString);
   const [ urlBaseValid, urlBase ] = validate('urlBase', elementIsString, elementGetString);
@@ -94,9 +137,11 @@ function validateConfig() {
   const [ sonarrInsecureValid, sonarrInsecure ] = validate('sonarrInsecure', elementIsBoolean, elementGetBoolean);
   const [ sonarrApiKeyValid, sonarrApiKey ] = validate('sonarrApiKey', elementIsString, elementGetString);
   const [ feedThemeValid, feedTheme ] = validate('feedTheme', elementIsOneOf.bind(null, [ 'auto', 'light', 'dark' ]), elementGetString);
+  const [ feedHealthDelayValid, feedHealthDelay ] = validate('feedHealthDelay', elementIsGTE.bind(null, 0), elementGetInteger);
+  const [ feedHealthDelayTypesValid, feedHealthDelayTypes ] = validate('feedHealthDelayTypes', elementHasSelection, elementGetSelections);
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
-    !sonarrApiKeyValid || !sonarrApiKeyValid || !feedThemeValid) {
+    !sonarrApiKeyValid || !sonarrApiKeyValid || !feedThemeValid || !feedHealthDelayValid || !feedHealthDelayTypesValid) {
     throw 'Invalid Configuration';
   }
   return {
@@ -107,7 +152,9 @@ function validateConfig() {
     sonarrBaseUrl,
     sonarrInsecure,
     sonarrApiKey,
-    feedTheme
+    feedTheme,
+    feedHealthDelay,
+    feedHealthDelayTypes
   }
 }
 
@@ -252,5 +299,17 @@ async function saveConfig() {
     }, 3000);
   } finally {
     saveConfigElement.disabled = false;
+  }
+}
+
+function feedHealthDelayChanged() {
+  const [ feedHealthDelayValid, feedHealthDelay ] = validate('feedHealthDelay', elementIsGTE.bind(null, 0), elementGetInteger);
+  if (feedHealthDelayValid) {
+    const messageElement = document.getElementById('feedHealthDelayTypesWrapper');
+    if (feedHealthDelay > 0) {
+      messageElement.classList.remove('collapse');
+    } else {
+      messageElement.classList.add('collapse');
+    }
   }
 }

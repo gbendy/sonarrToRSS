@@ -1,6 +1,36 @@
 import { HostConfigResource, getApi } from './sonarrApiV3';
 import { Context, SonarrApiConfig, SonarrApi, Config } from './types';
 
+export const HealthTypes = [
+  'ApiKeyValidationCheck',
+  'AppDataLocationCheck',
+  'DownloadClientCheck',
+  'DownloadClientRemovesCompletedDownloadsCheck',
+  'DownloadClientRootFolderCheck',
+  'DownloadClientSortingCheck',
+  'DownloadClientStatusCheck',
+  'ImportListRootFolderCheck',
+  'ImportListStatusCheck',
+  'ImportMechanismCheck',
+  'IndexerDownloadClientCheck',
+  'IndexerJackettAllCheck',
+  'IndexerLongTermStatusCheck',
+  'IndexerRssCheck',
+  'IndexerSearchCheck',
+  'IndexerStatusCheck',
+  'MountCheck',
+  'NotificationStatusCheck',
+  'PackageGlobalMessageCheck',
+  'ProxyCheck',
+  'RecyclingBinCheck',
+  'RemotePathMappingCheck',
+  'RemovedSeriesCheck',
+  'RootFolderCheck',
+  'ServerSideNotificationService',
+  'SystemTimeCheck',
+  'UpdateCheck'
+];
+
 export function isErrorWithCode(err: unknown): err is Error & { code: unknown } {
   return err instanceof Error && 'code' in (err as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 }
@@ -25,6 +55,10 @@ function isBoolean(value: unknown): value is boolean {
   return value === true || value === false;
 }
 
+function isArray(value: unknown): value is [] {
+  return Array.isArray(value);
+}
+
 function isHttpUrl(value: unknown): value is string {
   const url = isUrl(value);
   return url ? (url.protocol === 'http:' || url.protocol === 'https:') : false;
@@ -42,7 +76,8 @@ export function validateUserConfig(config: Config) {
   return validateSonarrApiConfig(config, false) &&
     isNumber(config?.port) && isString(config?.address) &&
     isHttpUrl(config?.applicationUrl) && isString(config?.urlBase) &&
-    (config?.feedTheme === 'auto' || config?.feedTheme === 'light' || config?.feedTheme === 'dark');
+    (config?.feedTheme === 'auto' || config?.feedTheme === 'light' || config?.feedTheme === 'dark') &&
+    isNumber(config?.feedHealthDelay) && isArray(config?.feedHealthDelayTypes);
 }
 
 export const sonarrApiKeys = [ 'sonarrBaseUrl', 'sonarrApiKey' , 'sonarrInsecure' ];
@@ -102,4 +137,12 @@ export async function updateContextFromConfig(context: Context) {
 
 export function getSonarrHostConfig(sonarrApi: SonarrApi): Promise<HostConfigResource> {
   return sonarrApi.getJson<HostConfigResource>('config/host');
+}
+
+export function arraysEqual(lhs: Array<unknown>, rhs: Array<unknown>): boolean {
+  if (lhs.length === rhs.length) {
+    const rhsSet = new Set(rhs);
+    return lhs.every(element => rhsSet.has(element));
+  }
+  return false;
 }

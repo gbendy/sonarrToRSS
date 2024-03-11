@@ -50,6 +50,20 @@
               </entry>
               <entry class="tip"><span id= "feedThemeMessage">Theme for feed. Auto will attempt to use the theme specified in the reader.
                 Some readers do not support auto theme in messages so the theme can be overridden here.</span></entry>
+              <entry><span class="label">Health Delay</span><input id="feedHealthDelay" value="{{context.config.feedHealthDelay}}" onChange="feedHealthDelayChanged()" type="number" min="0"></entry>
+              <entry class="tip"><span id= "feedHealthDelayMessage">Health issues are often intermittent and resolve within a short timeframe.
+                Setting this to a positive integer will prevent health events from being sent to the feed if they resolve within the given number of minutes.
+              </span></entry>
+              <div id="feedHealthDelayTypesWrapper" class="{{ifEqual context.config.feedHealthDelay 0 "collapse" ''}}">
+                <entry><span class="label">Health Delay Types</span>
+                  <select id="feedHealthDelayTypes" multiple size="10">
+                    {{#each healthTypes}}
+                      <option value="{{this}}" {{ifInArray this ../context.config.feedHealthDelayTypes 'data-selected' ''}}>{{this}}</option>
+                    {{/each}}
+                  </select>
+                </entry>
+                <entry class="tip"><span id= "feedHealthDelayTypesMessage">Select the types of health messages to delay</span></entry>
+              </div>
             </release>
           </detail>
         </data>

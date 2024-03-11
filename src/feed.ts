@@ -1,53 +1,12 @@
 import { Feed } from 'feed';
-import { Context, Event } from './types';
-import { ensureSeries, generateHelpers, resolveApplicationUrl } from './server';
-import { WebHookPayload } from './sonarrApiV3';
-import { create } from 'express-handlebars';
+import { Context } from './types';
+import { ensureSeries, resolveApplicationUrl } from './server';
+import { FeedEventManager } from './feedEventManager';
 
-export function eventTitle(event: WebHookPayload) {
-  if (event.eventType === 'ApplicationUpdate') {
-    return `Application update - ${event.message}`;
-  } else if (event.eventType === 'SeriesAdd') {
-    return `New series added - ${event.series?.title}`;
-  } else if (event.eventType === 'SeriesDelete') {
-    return `Series deleted - ${event.series?.title}`;
-  } else if (event.eventType === 'Download') {
-    return `Downloaded ${event.series?.title} S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}${event.isUpgrade ? ' - upgrade' : ''}`;
-  } else if (event.eventType === 'EpisodeFileDelete') {
-    return `Deleted ${event.series?.title} Episode S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title} - ${event.deleteReason}`;
-  } else if (event.eventType === 'Grab') {
-    return `Grabbed ${event.series?.title} S${event.episodes?.[0].seasonNumber} E${event.episodes?.[0].episodeNumber} - ${event.episodes?.[0].title}`;
-  } else if (event.eventType === 'Health') {
-    return 'Health';
-  } else if (event.eventType === 'HealthRestored') {
-    return 'Health Restored';
-  } else if (event.eventType === 'Test') {
-    return 'Test';
-  }
-  return event.eventType;
-}
-
-export async function addEvent(context: Context, event: Event) {
-  try {
-    const content = await context.feed.handlebars.renderView('./src/views/event.handlebars', {
-      instanceName: context.hostConfig?.instanceName ?? 'Sonarr',
-      event,
-      sonarrBaseUrl: context.config.sonarrBaseUrl,
-      useApplicationUrl: true,
-      forFeed: true
-    });
-    context.feed.feed.addItem({
-      title: eventTitle(event.event),
-      date: new Date(event.timestamp),
-      link: resolveApplicationUrl(context, `event/${event.id}`),
-      content
-    });
-  } catch (e) {
-    console.log(e);
-  }
-}
 
 export async function init(context: Context) {
+  context.feed?.eventManager?.clear();
+
   context.feed = {
     feed: new Feed({
       title: 'Sonarr to RSS',
@@ -60,29 +19,24 @@ export async function init(context: Context) {
         rss: resolveApplicationUrl(context, 'rss')
       },
     }),
-    handlebars: create({
-      layoutsDir: './src/views/layouts',
-      partialsDir: './src/views/partials',
-      defaultLayout: 'rss',
-      helpers: generateHelpers(context)
-    })
+    eventManager: new FeedEventManager(context)
   };
 
-  const promises: Array<Promise<any>> = []; //eslint-disable-line @typescript-eslint/no-explicit-any
-  const lastIndex = Math.max(context.history.length - 20 - 1, 0);
+  const events = context.feed.eventManager.generateHistorical(20);
+  const promises: Array<Promise<unknown>> = [];
   const seriesIds = new Set<number>;
-  for (let index=context.history.length-1; index > lastIndex; index--) {
-    const seriesId = context.history[index].event.series?.id;
+
+  events.forEach(event => {
+    const seriesId = event.event.series?.id;
     if (seriesId !== undefined && !context.seriesData.has(seriesId)) {
       seriesIds.add(seriesId);
     }
-    promises.push(addEvent(context, context.history[index]));
-  }
-
+    promises.push(context.feed.eventManager.addEvent(event));
+  });
   promises.push(ensureSeries(context, seriesIds));
   return Promise.all(promises);
 }
 
 export default {
-  init, addEvent
+  init
 };

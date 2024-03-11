@@ -14,6 +14,8 @@ const defaultConfig: Config = {
   applicationUrl: '',
   urlBase: '',
   feedTheme: 'auto',
+  feedHealthDelay: 0,
+  feedHealthDelayTypes: [],
   configured: false
 };
 
