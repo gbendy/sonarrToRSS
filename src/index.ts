@@ -14,6 +14,7 @@ const defaultConfig: Config = {
   historyFile: './history.json',
   applicationUrl: '',
   urlBase: '',
+  feedTitle: 'Sonarr to RSS',
   feedTheme: 'auto',
   feedHealthDelay: 0,
   feedHealthDelayTypes: [],

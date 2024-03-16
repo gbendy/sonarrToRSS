@@ -8,7 +8,7 @@ export async function init(state: State) {
 
   state.feed = {
     feed: new Feed({
-      title: 'Sonarr to RSS',
+      title: state.config.feedTitle,
       description: `Events for ${state.hostConfig?.instanceName ?? 'Sonarr'}`,
       id: state.config.applicationUrl,
       link: state.config.applicationUrl,

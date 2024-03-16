@@ -76,6 +76,7 @@ export function validateUserConfig(config: Config) {
   return validateSonarrApiConfig(config, false) &&
     isNumber(config?.port) && isString(config?.address) &&
     isHttpUrl(config?.applicationUrl) && isString(config?.urlBase) &&
+    isString(config?.feedTitle) &&
     (config?.feedTheme === 'auto' || config?.feedTheme === 'light' || config?.feedTheme === 'dark') &&
     isNumber(config?.feedHealthDelay) && isArray(config?.feedHealthDelayTypes);
 }

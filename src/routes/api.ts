@@ -89,6 +89,10 @@ export default function (state: State) {
         newConfig.sonarrApiKey = postedConfig.sonarrApiKey;
         changedSonarrApi = true;
       }
+      if (newConfig.feedTitle !== postedConfig.feedTitle) {
+        newConfig.feedTitle = postedConfig.feedTitle;
+        regenerateFeed = true;
+      }
       if (newConfig.feedTheme !== postedConfig.feedTheme) {
         newConfig.feedTheme = postedConfig.feedTheme;
         regenerateFeed = true;

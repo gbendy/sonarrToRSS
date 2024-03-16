@@ -41,6 +41,8 @@
           <detail>
             <episode class="noseries">Feed</episode>
             <release>
+              <entry><span class="label">Title</span><input id ="feedTitle" value="{{state.config.feedTitle}}"></entry>
+              <entry class="tip"><span id= "feedTitleMessage">Title of feed.</span></entry>
               <entry><span class="label">Theme</span>
                 <select id ="feedTheme">
                   <option {{ifEqual state.config.feedTheme 'auto' 'selected' ''}} value="auto">Auto</option>

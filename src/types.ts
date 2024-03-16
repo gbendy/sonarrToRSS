@@ -14,6 +14,7 @@ export interface UserConfig extends SonarrApiConfig {
   address: string;
   applicationUrl: string;
   urlBase: string;
+  feedTitle: string;
   feedTheme: 'auto' | 'light' | 'dark',
   feedHealthDelay: number,
   feedHealthDelayTypes: Array<string>

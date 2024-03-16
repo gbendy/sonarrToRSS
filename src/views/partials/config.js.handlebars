@@ -136,12 +136,14 @@ function validateConfig() {
   const [ sonarrBaseUrlValid, sonarrBaseUrl ] = validate('sonarrBaseUrl', elementIsHttpUrlOrEmptyString, elementGetString);
   const [ sonarrInsecureValid, sonarrInsecure ] = validate('sonarrInsecure', elementIsBoolean, elementGetBoolean);
   const [ sonarrApiKeyValid, sonarrApiKey ] = validate('sonarrApiKey', elementIsString, elementGetString);
+  const [ feedTitleValid, feedTitle ] = validate('feedTitle', elementIsString, elementGetString);
   const [ feedThemeValid, feedTheme ] = validate('feedTheme', elementIsOneOf.bind(null, [ 'auto', 'light', 'dark' ]), elementGetString);
   const [ feedHealthDelayValid, feedHealthDelay ] = validate('feedHealthDelay', elementIsGTE.bind(null, 0), elementGetInteger);
   const [ feedHealthDelayTypesValid, feedHealthDelayTypes ] = validate('feedHealthDelayTypes', elementHasSelection, elementGetSelections);
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
-    !sonarrApiKeyValid || !sonarrApiKeyValid || !feedThemeValid || !feedHealthDelayValid || !feedHealthDelayTypesValid) {
+    !sonarrApiKeyValid || !sonarrApiKeyValid ||
+    !feedTitleValid || !feedThemeValid || !feedHealthDelayValid || !feedHealthDelayTypesValid) {
     throw 'Invalid Configuration';
   }
   return {
@@ -152,6 +154,7 @@ function validateConfig() {
     sonarrBaseUrl,
     sonarrInsecure,
     sonarrApiKey,
+    feedTitle,
     feedTheme,
     feedHealthDelay,
     feedHealthDelayTypes
