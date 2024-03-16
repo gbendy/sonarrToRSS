@@ -3,6 +3,7 @@ import { ImageCache, SeriesResourceExt } from '../types';
 import { generateHelpers } from '../server';
 import { HealthTypes } from '../utils';
 import { State } from '../state';
+import { noCache } from '../middleware';
 
 /**
  * Parses the given string and returns it as an Integer.
@@ -79,7 +80,7 @@ export default function (state: State) {
     res.redirect(state.resolveUrlPath('browse'));
   });
 
-  router.get('/config', (req: Request, res: Response) => {
+  router.get('/config', noCache, (req: Request, res: Response) => {
     res.render('config', {
       layout: 'config',
       state: state,
@@ -106,10 +107,6 @@ export default function (state: State) {
 
   // History browsing
   router.get('/browse/:pageOrId?/:count?', async (req: Request, res: Response) => {
-    if (!state.sonarrApi) {
-      res.redirect(state.resolveUrlPath('config'));
-      return;
-    }
     // get and sanitise input parameters
     const totalEvents = state.history.length;
     const count = Math.max(parseInteger(req.params.count, 6), 1);
@@ -221,10 +218,6 @@ export default function (state: State) {
   });
 
   router.get('/event/:eventId?', async (req: Request, res: Response) => {
-    if (!state.sonarrApi) {
-      res.redirect(state.resolveUrlPath('config'));
-      return;
-    }
     const count = parseInteger(req.query.count as string, undefined);
     const ascending = req.query.sort === 'ascending';
 

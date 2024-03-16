@@ -21,6 +21,8 @@ const defaultConfig: Config = {
   configured: false
 };
 
+logger.info('Starting Sonarr to RSS server');
+
 State.create(defaultConfig).then(start).catch(e => {
   logger.error(e);
   logger.error('Fatal startup error, exiting');

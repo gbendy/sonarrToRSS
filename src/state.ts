@@ -1,7 +1,7 @@
 import { HostConfigResource } from './sonarrApiV3';
 import { Config, Events, History, ImageCache, RSSFeed, SeriesResourceExt, SonarrApi } from './types';
 import type { Server } from 'node:http';
-import { getSonarrApi, getSonarrHostConfig, isErrorWithCode } from './utils';
+import { getSonarrApi, getSonarrHostConfig, isErrorWithCode, randomString } from './utils';
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { forCategory } from './logger';
@@ -21,6 +21,7 @@ export class State {
   server!: Server;
   hostConfig?: HostConfigResource;
   sonarrApi?: SonarrApi;
+  pingId!: string;
 
   constructor(
     configFilename: string,
@@ -30,6 +31,7 @@ export class State {
     this.config = config;
 
     this.resolvedHistoryFile = path.resolve(this.config.historyFile);
+    this.regeneratePingId();
   }
 
   async updateFromConfig() {
@@ -159,6 +161,10 @@ export class State {
     }
     const state = new State(configFilename, config);
     return state.init();
+  }
+
+  regeneratePingId() {
+    this.pingId = randomString();
   }
 }
 

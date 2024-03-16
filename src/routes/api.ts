@@ -7,20 +7,27 @@ import { forCategory } from '../logger';
 import feed from '../feed';
 import { start } from '../server';
 import { State } from '../state';
+import { noCache } from '../middleware';
 
 const logger = forCategory('api');
 
 export default function (state: State) {
   const router = Router();
 
-  router.get('/ping', (req, res) => {
+  // copy ping id so we always use the one associated with this
+  // instance of the express server.
+  const pingId = state.pingId;
+  router.get('/ping', noCache, (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('x-ping-id', pingId);
     res.end();
   });
 
   router.post('/testSonarrUrl', express.json(), async (req, res) => {
+    logger.info('Testing Sonarr URL');
     const sonarrApi = req.body as SonarrApiConfig;
     if (!validateSonarrApiConfig(sonarrApi, true)) {
+      logger.error('Invalid Sonarr server data');
       res.statusCode = 400;
       res.statusMessage = 'Invalid Body';
       res.end();
@@ -28,14 +35,18 @@ export default function (state: State) {
     }
     res.setHeader('content-type', 'application/json; charset=UTF-8');
     try {
+      logger.info(`Testing Sonarr at ${sonarrApi.sonarrBaseUrl}`);
       const api = getSonarrApi(sonarrApi);
       const result = await getSonarrHostConfig(api);
+      logger.info(`Testing Sonarr at ${sonarrApi.sonarrBaseUrl} succeeded`);
       res.write(JSON.stringify({
         result: 'OK',
         instanceName: result.instanceName ?? 'Sonarr'
       }));
       res.end();
     } catch (message) {
+      logger.error(`Testing Sonarr at ${sonarrApi.sonarrBaseUrl} failed`);
+      logger.error(message as string);
       res.write(JSON.stringify({
         result: 'FAILED',
         message
@@ -46,7 +57,9 @@ export default function (state: State) {
 
   router.post('/saveConfig', express.json(), async (req, res) => {
     const postedConfig = req.body as Config;
+    logger.info('Updating configuration');
     if (!validateUserConfig(postedConfig)) {
+      logger.error('Invalid configuration');
       res.statusCode = 400;
       res.statusMessage = 'Invalid Body';
       res.end();
@@ -105,10 +118,14 @@ export default function (state: State) {
         newConfig.feedHealthDelayTypes = postedConfig.feedHealthDelayTypes;
         regenerateFeed = true;
       }
+      if (!newConfig.configured) {
+        logger.info('Initial configuration complete');
+      }
       newConfig.configured = true;
       const responseData: JSONObject = {
         result: 'OK',
       };
+
       if (initialConfig || changedListen || changedApplicationUrl || changedUrlBase || changedSonarrApi || regenerateFeed) {
         // write out new config to config file.
         try {
@@ -116,11 +133,11 @@ export default function (state: State) {
         } catch (e) {
           if (isErrorWithCode(e)) {
             // write file error, this is the only throw that should happen
-            logger.info(`Config file ${state.configFilename} cannot be written. ${e.code} ${e.message}`);
+            logger.error(`Config file ${state.configFilename} cannot be written. ${e.code} ${e.message}`);
           } else if (e instanceof Error) {
-            logger.info(`Config file ${state.configFilename} cannot be written. ${e.message}`);
+            logger.error(`Config file ${state.configFilename} cannot be written. ${e.message}`);
           } else {
-            logger.info(`Config file ${state.configFilename} cannot be written. ${e}`);
+            logger.error(`Config file ${state.configFilename} cannot be written. ${e}`);
           }
           throw 'Could not write config file';
         }
@@ -128,25 +145,33 @@ export default function (state: State) {
         state.config = newConfig;
 
         await state.updateFromConfig();
+        logger.info('Configuration update complete');
 
+        // work out what we need to restart to use new config
         if (initialConfig || changedListen) {
           // restart server, will also restart feed
           logger.info(`Server connection configuration changed. Restarting to listen on ${newConfig.address}:${newConfig.port}`);
+
+          state.regeneratePingId();
           state.server.close(() => {
             start(state);
           });
           responseData.reload = true;
+          responseData.pingId = state.pingId;
         } else {
           if (changedApplicationUrl) {
             responseData.reload = true;
+            responseData.pingId = state.pingId;
           }
-          if (regenerateFeed) {
+          if (regenerateFeed || changedSonarrApi) {
+            logger.info('Regenerating feed');
             await feed.init(state);
           }
         }
         // other changes will be picked up immediately
+      } else {
+        logger.info('No config changes found');
       }
-      // work out what we need to restart to use new config
       res.write(JSON.stringify(responseData));
       res.end();
     } catch (message) {

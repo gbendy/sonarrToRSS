@@ -8,6 +8,8 @@ import api from './routes/api';
 import sonarr from './routes/sonarr';
 import feeds from './routes/feeds';
 import browse from './routes/browse';
+import { HealthTypes } from './utils';
+import { noCache } from './middleware';
 
 const logger = forCategory('server');
 
@@ -120,19 +122,21 @@ export async function start(state: State) {
   app.engine('handlebars', engine());
   app.set('view engine', 'handlebars');
   app.set('views', './src/views');
-
+  app.disable('x-powered-by');
   if (!state.config.configured) {
     const helpers = generateHelpers(state);
+    logger.info('Server not configured, starting in configuration only mode');
 
-    app.get('*', (req, res) => {
+    app.use(noCache);
+    app.use('/api/', api(state));
+    app.get('/', (req, res) => {
       res.render('config', {
         layout: 'config',
         state: state,
+        healthTypes: HealthTypes,
         helpers
       });
-      return;
     });
-    app.use('/api/', api(state));
   } else {
     app.use(browse(state));
     app.use(feeds(state));
@@ -141,6 +145,6 @@ export async function start(state: State) {
   }
 
   state.server = app.listen(state.config.port, state.config.address, () => {
-    logger.info(`Server is running at http://${state.config.address}:${state.config.port}`);
+    logger.info(`Server listening on http://${state.config.address}:${state.config.port}`);
   });
 }

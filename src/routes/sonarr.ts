@@ -1,9 +1,9 @@
 import  express, { Router, Request, Response } from 'express';
-import crypto from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { Event } from '../types';
 import { forCategory } from '../logger';
 import { State } from '../state';
+import { randomString } from '../utils';
 
 const logger = forCategory('sonarr');
 
@@ -15,7 +15,7 @@ export default function (state: State) {
 
   const processEvent = async (req: Request, res: Response) => {
     const timestamp = Date.now();
-    const id = `e${crypto.randomBytes(12).toString('hex')}`;
+    const id = randomString();
     const event: Event = {
       timestamp,
       id,

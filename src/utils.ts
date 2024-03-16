@@ -1,5 +1,6 @@
 import { HostConfigResource, getApi } from './sonarrApiV3';
 import { SonarrApiConfig, SonarrApi, Config } from './types';
+import crypto from 'node:crypto';
 
 export const HealthTypes = [
   'ApiKeyValidationCheck',
@@ -105,4 +106,8 @@ export function arraysEqual(lhs: Array<unknown>, rhs: Array<unknown>): boolean {
     return lhs.every(element => rhsSet.has(element));
   }
   return false;
+}
+
+export function randomString(length: number = 12, prefix: string = 'e') {
+  return `${prefix}${crypto.randomBytes(length).toString('hex')}`;
 }

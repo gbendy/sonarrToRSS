@@ -32,6 +32,10 @@ function isUrl(value) {
   }
 }
 
+function elementValid() {
+  return true;
+}
+
 function isString(value) {
   return value?.constructor === String;
 }
@@ -139,7 +143,7 @@ function validateConfig() {
   const [ feedTitleValid, feedTitle ] = validate('feedTitle', elementIsString, elementGetString);
   const [ feedThemeValid, feedTheme ] = validate('feedTheme', elementIsOneOf.bind(null, [ 'auto', 'light', 'dark' ]), elementGetString);
   const [ feedHealthDelayValid, feedHealthDelay ] = validate('feedHealthDelay', elementIsGTE.bind(null, 0), elementGetInteger);
-  const [ feedHealthDelayTypesValid, feedHealthDelayTypes ] = validate('feedHealthDelayTypes', elementHasSelection, elementGetSelections);
+  const [ feedHealthDelayTypesValid, feedHealthDelayTypes ] = validate('feedHealthDelayTypes', feedHealthDelay > 0 ? elementHasSelection : elementValid, elementGetSelections);
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
     !sonarrApiKeyValid || !sonarrApiKeyValid ||
@@ -231,7 +235,7 @@ function appendPath(source, path) {
   return (source.endsWith('/') ? source : (source + '/')) + path;
 }
 
-async function reloadAndRedirect(message, applicationUrl, redirectUrl) {
+async function reloadAndRedirect(message, applicationUrl, redirectUrl, expectedPingId) {
   const overlay = document.getElementById('overlay');
   const overlayMessage = document.getElementById('overlayMessage');
   overlay.classList.remove('hidden');
@@ -243,7 +247,10 @@ async function reloadAndRedirect(message, applicationUrl, redirectUrl) {
     try {
       const res = await fetch(pingUrl);
       if (res.ok) {
-        window.location = redirectUrl;
+        const pingId = res.headers.get('x-ping-id');
+        if (pingId === expectedPingId) {
+          window.location = redirectUrl;
+        }
       }
     } catch {
     }
@@ -283,9 +290,9 @@ async function saveConfig() {
         }, 3000);
         if (json.reload) {
           if (!isConfigured) {
-            reloadAndRedirect(`Reconfiguring, waiting for ${config.applicationUrl} to be ready`, config.applicationUrl, config.applicationUrl);
+            reloadAndRedirect(`Reconfiguring, waiting for ${config.applicationUrl} to be ready`, config.applicationUrl, config.applicationUrl, json.pingId);
           } else {
-            reloadAndRedirect(`Reconfiguring, waiting for ${config.applicationUrl} to be ready`, config.applicationUrl, appendPath(config.applicationUrl, 'config'));
+            reloadAndRedirect(`Reconfiguring, waiting for ${config.applicationUrl} to be ready`, config.applicationUrl, appendPath(config.applicationUrl, 'config'), json.pingId);
           }
         }
       } else {

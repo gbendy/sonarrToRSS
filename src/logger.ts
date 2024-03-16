@@ -1,10 +1,10 @@
 
 function prefixTimestamp(level: string, category: string, msg: string) {
-  return `${new Date().toISOString()} ${level} ${category} ${msg}`;
+  return `${new Date().toISOString()} ${level.padEnd(5).substring(0,5)} ${category.padEnd(7).substring(0,7)} ${msg}`;
 }
 
 export function assert(value: any, category: string, msg: string) { // eslint-disable-line @typescript-eslint/no-explicit-any
-  console.assert(value, prefixTimestamp('assert', category, msg));
+  console.assert(value, prefixTimestamp('assrt', category, msg));
 }
 
 export function debug(category: string, msg: string) {
