@@ -1,6 +1,5 @@
 import { Item } from 'feed';
 import { Event } from './types';
-import { generateHelpers } from './server';
 import { create } from 'express-handlebars';
 import { forCategory } from './logger';
 import { State } from './state';
@@ -61,7 +60,7 @@ export class FeedEventManager {
       layoutsDir: './src/views/layouts',
       partialsDir: './src/views/partials',
       defaultLayout: 'rss',
-      helpers: generateHelpers(state)
+      helpers: state.handlebarsHelpers
     });
   }
 

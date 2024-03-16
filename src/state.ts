@@ -1,4 +1,4 @@
-import { HostConfigResource } from './sonarrApiV3';
+import { HostConfigResource, WebHookPayload } from './sonarrApiV3';
 import { Config, Events, History, ImageCache, RSSFeed, SeriesResourceExt, SonarrApi } from './types';
 import type { Server } from 'node:http';
 import { getSonarrApi, getSonarrHostConfig, isErrorWithCode, randomString } from './utils';
@@ -7,6 +7,19 @@ import { readFile } from 'node:fs/promises';
 import { forCategory } from './logger';
 
 const logger = forCategory('state');
+
+const eventTypePartials = {
+  ApplicationUpdate: 'applicationUpdate',
+  Download: 'download',
+  EpisodeFileDelete: 'episodeFileDelete',
+  Grab: 'grab',
+  Health: 'health',
+  HealthRestored: 'healthRestored',
+  SeriesAdd: 'seriesAdd',
+  SeriesDelete: 'seriesDelete',
+  Test: 'test'
+};
+
 
 export class State {
   configFilename: string;
@@ -110,7 +123,6 @@ export class State {
     return this;
   }
 
-
   async ensureSeries(seriesIds: Set<number>) {
     if (!this.sonarrApi) {
       return;
@@ -140,6 +152,100 @@ export class State {
     return `${this.applicationUrl}${path.startsWith('/') ? path.slice(1) : path}`;
   }
 
+  get handlebarsHelpers() {
+    return {
+      dateTime: (date: number) => {
+        const d = new Date(date);
+        return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+      },
+      plusOne: (value: number) => {
+        return value + 1;
+      },
+      eventPartial: (event: WebHookPayload) => {
+        return eventTypePartials[event.eventType] ?? 'defaultType';
+      },
+      toHumanSize: (value: number) => {
+        const i = Math.floor(Math.log(value) / Math.log(1024));
+        return (value / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'KB', 'MB', 'GB', 'TB'][i];
+      },
+      ascendingQuery: (ascending: boolean) => {
+        return ascending ? '?sort=ascending' : '';
+      },
+      browseUrl: (pageOrId: number|string|undefined, count: number|undefined, ascending: boolean|undefined, applicationUrl: boolean = false) => {
+        let path = 'browse';
+        if (pageOrId !== undefined) {
+          path += `/${pageOrId}`;
+          if (count !== undefined) {
+            path += `/${count}`;
+          }
+        }
+        if (ascending) {
+          path += '?sort=ascending';
+        }
+        return applicationUrl ? this.resolveApplicationUrl(path) : this.resolveUrlPath(path);
+      },
+      nextUrl: (page: number, count: number, ascending: boolean, applicationUrl: boolean = false) => {
+        const path = `browse/${Math.max(page+1, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
+        return applicationUrl ? this.resolveApplicationUrl(path) : this.resolveUrlPath(path);
+      },
+      prevUrl: (page: number, count: number, ascending: boolean, applicationUrl: boolean = false) => {
+        const path = `browse/${Math.max(page-1, 0)}/${count}${ascending ? '?sort=ascending' : ''}`;
+        return applicationUrl ? this.resolveApplicationUrl(path) : this.resolveUrlPath(path);
+      },
+      eventUrl: (eventId: string, count: number|undefined, ascending: boolean|undefined, applicationUrl: boolean = false) => {
+        let path = `event/${eventId}`;
+        if (count || ascending) {
+          path += '?';
+          if (count) {
+            path += `count=${count}`;
+          }
+          if (ascending) {
+            path += `${count ? '&' : ''}sort=ascending`;
+          }
+        }
+        return applicationUrl ? this.resolveApplicationUrl(path) : this.resolveUrlPath(path);
+      },
+      bannerUrl: (seriedId: string, applicationUrl: boolean = false) => {
+        const path = `banner/${seriedId}`;
+        return applicationUrl ? this.resolveApplicationUrl(path) : this.resolveUrlPath(path);
+      },
+      testSonarrUrl: () => {
+        return this.resolveUrlPath('/api/testSonarrUrl');
+      },
+      saveConfigUrl: () => {
+        return this.resolveUrlPath('/api/saveConfig');
+      },
+      showBanner: (event: WebHookPayload) => {
+        return event.series && event.eventType !== 'SeriesDelete' && event.eventType !== 'Test' && this.seriesData.has(event.series.id);
+      },
+      ifEqual: (lhs: any, rhs: any, isTrue: any, isFalse: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+        return lhs == rhs ? isTrue : isFalse;
+      },
+      ifInArray: (value:any, array: Array<any>, isFound: any, isNotFound: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+        return array.findIndex(element => value === element) < 0 ? isNotFound : isFound;
+      },
+      colorScheme: (forFeed: boolean) => {
+        if (forFeed) {
+          return this.config.feedTheme === 'auto' ? 'light dark' : this.config.feedTheme;
+        } else {
+          return 'light dark';
+        }
+      },
+      defaultColor: (color: string, forFeed: boolean) => {
+        const isLight = !forFeed || this.config.feedTheme !== 'dark';
+        return `var(--${isLight ? 'light' : 'dark'}-${color})`;
+      },
+      defaultColorInvert: (color: string, forFeed: boolean) => {
+        const isDark = !forFeed || this.config.feedTheme !== 'dark';
+        return `var(--${isDark ? 'dark' : 'light'}-${color})`;
+      }
+    };
+  }
+
+  regeneratePingId() {
+    this.pingId = randomString();
+  }
+
   static async create(defaultConfig: Config) {
     const configFilename = path.resolve(process.argv.length > 2 ? process.argv[2] : './config.json');
     const config = { ...defaultConfig };
@@ -161,10 +267,6 @@ export class State {
     }
     const state = new State(configFilename, config);
     return state.init();
-  }
-
-  regeneratePingId() {
-    this.pingId = randomString();
   }
 }
 

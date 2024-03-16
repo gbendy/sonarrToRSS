@@ -1,6 +1,5 @@
 import  { Router, Request, Response } from 'express';
 import { ImageCache, SeriesResourceExt } from '../types';
-import { generateHelpers } from '../server';
 import { HealthTypes } from '../utils';
 import { State } from '../state';
 import { noCache } from '../middleware';
@@ -74,7 +73,7 @@ function getBanner(state: State, seriesId: number, res: Response) {
 
 export default function (state: State) {
   const router = Router();
-  const helpers = generateHelpers(state);
+  const helpers = state.handlebarsHelpers;
 
   router.get('/', (req: Request, res: Response) => {
     res.redirect(state.resolveUrlPath('browse'));
