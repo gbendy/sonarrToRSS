@@ -1,7 +1,8 @@
 import { Feed } from 'feed';
-import { FeedEventManager } from './feedEventManager';
-import { State } from './state';
+import { State } from '../state';
+import { EventManager } from './eventManager';
 
+export { Feed, EventManager };
 
 export async function init(state: State) {
   state.feed?.eventManager?.clear();
@@ -18,7 +19,7 @@ export async function init(state: State) {
         rss: state.resolveApplicationUrl('rss')
       },
     }),
-    eventManager: new FeedEventManager(state)
+    eventManager: new EventManager(state)
   };
 
   const events = state.feed.eventManager.generateHistorical(20);
@@ -37,5 +38,7 @@ export async function init(state: State) {
 }
 
 export default {
-  init
+  init,
+  EventManager,
+  Feed
 };

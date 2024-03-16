@@ -1,8 +1,8 @@
 import { Item } from 'feed';
-import { Event } from './types';
+import { Event } from '../types';
 import { create } from 'express-handlebars';
-import { forCategory } from './logger';
-import { State } from './state';
+import { forCategory } from '../logger';
+import { State } from '../state';
 
 const logger = forCategory('feed');
 
@@ -46,7 +46,7 @@ function fromMinutes(minutes: number) {
   return minutes * 60000;
 }
 
-export class FeedEventManager {
+export class EventManager {
   #state: State;
   #delayedHealthEvents: Map<string, HealthTimer>;
   #typesToDelay: Set<string>;

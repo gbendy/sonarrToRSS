@@ -1,7 +1,6 @@
-import type { Feed } from 'feed';
 import type { SeriesResouce, WebHookPayload, getApi } from './sonarrApiV3';
 import type { Response } from 'express';
-import { FeedEventManager } from './feedEventManager';
+import type { Feed, EventManager } from './feed';
 
 export interface SonarrApiConfig {
   sonarrBaseUrl: string;
@@ -48,7 +47,7 @@ export interface SeriesResourceExt extends SeriesResouce {
 
 export interface RSSFeed {
   feed: Feed;
-  eventManager: FeedEventManager;
+  eventManager: EventManager;
 }
 
 export type SonarrApi = ReturnType<typeof getApi>;
