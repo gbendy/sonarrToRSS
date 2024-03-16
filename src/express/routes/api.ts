@@ -1,12 +1,12 @@
 import  express, { Router } from 'express';
-import { Config, SonarrApiConfig } from '../types';
-import { arraysEqual, getSonarrApi, getSonarrHostConfig, isErrorWithCode, validateSonarrApiConfig, validateUserConfig } from '../utils';
-import { JSONObject } from '../sonarrApiV3';
+import { Config, SonarrApiConfig } from '../../types';
+import { arraysEqual, getSonarrApi, getSonarrHostConfig, isErrorWithCode, validateSonarrApiConfig, validateUserConfig } from '../../utils';
+import { JSONObject } from '../../sonarrApiV3';
 import { writeFile } from 'node:fs/promises';
-import { forCategory } from '../logger';
-import feed from '../feed';
-import { start } from '../server';
-import { State } from '../state';
+import { forCategory } from '../../logger';
+import feed from '../../feed';
+import { start } from '..';
+import { State } from '../../state';
 import { noCache } from '../middleware';
 
 const logger = forCategory('api');

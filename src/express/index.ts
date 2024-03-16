@@ -1,9 +1,9 @@
 import express, { Express } from 'express';
 import { engine } from 'express-handlebars';
-import { State } from './state';
-import { forCategory } from './logger';
-import feed from './feed';
-import { HealthTypes } from './utils';
+import { State } from '../state';
+import { forCategory } from '../logger';
+import feed from '../feed';
+import { HealthTypes } from '../utils';
 import { noCache } from './middleware';
 import api from './routes/api';
 import sonarr from './routes/sonarr';

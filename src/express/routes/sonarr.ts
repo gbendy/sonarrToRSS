@@ -1,9 +1,9 @@
 import  express, { Router, Request, Response } from 'express';
 import { writeFileSync } from 'node:fs';
-import { Event } from '../types';
-import { forCategory } from '../logger';
-import { State } from '../state';
-import { randomString } from '../utils';
+import { Event } from '../../types';
+import { forCategory } from '../../logger';
+import { State } from '../../state';
+import { randomString } from '../../utils';
 
 const logger = forCategory('sonarr');
 

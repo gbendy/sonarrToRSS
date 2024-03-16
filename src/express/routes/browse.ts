@@ -1,7 +1,7 @@
 import  { Router, Request, Response } from 'express';
-import { ImageCache, SeriesResourceExt } from '../types';
-import { HealthTypes } from '../utils';
-import { State } from '../state';
+import { ImageCache, SeriesResourceExt } from '../../types';
+import { HealthTypes } from '../../utils';
+import { State } from '../../state';
 import { noCache } from '../middleware';
 
 /**

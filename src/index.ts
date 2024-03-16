@@ -1,7 +1,7 @@
-import { Config } from './types';
-import { start } from './server';
 import { forCategory } from './logger';
+import { Config } from './types';
 import { State } from './state';
+import { start } from './express';
 
 const logger = forCategory('startup');
 
