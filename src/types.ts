@@ -1,7 +1,6 @@
 import type { Feed } from 'feed';
-import type { HostConfigResource, SeriesResouce, WebHookPayload, getApi } from './sonarrApiV3';
+import type { SeriesResouce, WebHookPayload, getApi } from './sonarrApiV3';
 import type { Response } from 'express';
-import type { Server } from 'node:http';
 import { FeedEventManager } from './feedEventManager';
 
 export interface SonarrApiConfig {
@@ -52,18 +51,3 @@ export interface RSSFeed {
 }
 
 export type SonarrApi = ReturnType<typeof getApi>;
-
-export interface Context {
-  configFilename: string;
-  config: Config;
-  hostConfig?: HostConfigResource;
-  sonarrApi?: SonarrApi;
-  urlBase: string;
-  applicationUrl: string;
-  resolvedHistoryFile: string;
-  history: History;
-  events: Events;
-  seriesData: Map<number, SeriesResourceExt>;
-  feed: RSSFeed;
-  server: Server;
-}

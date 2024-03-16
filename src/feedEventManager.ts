@@ -1,8 +1,9 @@
 import { Item } from 'feed';
-import { Context, Event } from './types';
-import { generateHelpers, resolveApplicationUrl } from './server';
+import { Event } from './types';
+import { generateHelpers } from './server';
 import { create } from 'express-handlebars';
 import { forCategory } from './logger';
+import { State } from './state';
 
 const logger = forCategory('feed');
 
@@ -47,20 +48,20 @@ function fromMinutes(minutes: number) {
 }
 
 export class FeedEventManager {
-  #context: Context;
+  #state: State;
   #delayedHealthEvents: Map<string, HealthTimer>;
   #typesToDelay: Set<string>;
   #handlebars: ReturnType<typeof create>;
 
-  constructor(context: Context) {
-    this.#context = context;
+  constructor(state: State) {
+    this.#state = state;
     this.#delayedHealthEvents = new Map<string, HealthTimer>();
-    this.#typesToDelay = new Set(context.config.feedHealthDelay > 0 ? context.config.feedHealthDelayTypes : []);
+    this.#typesToDelay = new Set(state.config.feedHealthDelay > 0 ? state.config.feedHealthDelayTypes : []);
     this.#handlebars = create({
       layoutsDir: './src/views/layouts',
       partialsDir: './src/views/partials',
       defaultLayout: 'rss',
-      helpers: generateHelpers(context)
+      helpers: generateHelpers(state)
     });
   }
 
@@ -80,33 +81,33 @@ export class FeedEventManager {
   }
 
   #expired(timeDifference: number) {
-    return timeDifference > fromMinutes(this.#context.config.feedHealthDelay);
+    return timeDifference > fromMinutes(this.#state.config.feedHealthDelay);
   }
 
   #registerDelayedHealthEvent(id: string, event: Event, historic: boolean=false) {
     if (historic) {
-      const historicDelay = Math.ceil(this.#context.config.feedHealthDelay - toMinutes(Date.now() - event.timestamp));
+      const historicDelay = Math.ceil(this.#state.config.feedHealthDelay - toMinutes(Date.now() - event.timestamp));
       logger.info(`Delaying historic health event '${id}' for ${historicDelay} more minutes`);
     } else {
-      logger.info(`Delaying feed health event '${id}' for ${this.#context.config.feedHealthDelay} minutes`);
+      logger.info(`Delaying feed health event '${id}' for ${this.#state.config.feedHealthDelay} minutes`);
 
     }
     this.#delayedHealthEvents.set(id, {
       startTime: event.timestamp,
       timer: setTimeout(async () => {
         // delay timed out
-        logger.info(`Health event '${id}' did not receive restore event within ${this.#context.config.feedHealthDelay} minutes so sending to feed`);
+        logger.info(`Health event '${id}' did not receive restore event within ${this.#state.config.feedHealthDelay} minutes so sending to feed`);
         this.#delayedHealthEvents.delete(id);
         this.addEvent(event);
-      }, fromMinutes(this.#context.config.feedHealthDelay) - (Date.now() - event.timestamp))
+      }, fromMinutes(this.#state.config.feedHealthDelay) - (Date.now() - event.timestamp))
     });
   }
 
   async #createFeedItem(event: Event): Promise<Item> {
     const content = await this.#handlebars.renderView('./src/views/event.handlebars', {
-      instanceName: this.#context.hostConfig?.instanceName ?? 'Sonarr',
+      instanceName: this.#state.hostConfig?.instanceName ?? 'Sonarr',
       event,
-      sonarrBaseUrl: this.#context.config.sonarrBaseUrl,
+      sonarrBaseUrl: this.#state.config.sonarrBaseUrl,
       useApplicationUrl: true,
       forFeed: true
     });
@@ -114,7 +115,7 @@ export class FeedEventManager {
       title: eventTitle(event),
       date: new Date(event.timestamp),
       published: new Date(event.timestamp),
-      link: resolveApplicationUrl(this.#context, `event/${event.id}`),
+      link: this.#state.resolveApplicationUrl(`event/${event.id}`),
       content
     };
   }
@@ -125,7 +126,7 @@ export class FeedEventManager {
    * @param event
    */
   async processNew(event: Event) {
-    if (this.#context.config.feedHealthDelay <= 0) {
+    if (this.#state.config.feedHealthDelay <= 0) {
       // delay disabled
       return this.addEvent(event);
     }
@@ -155,7 +156,7 @@ export class FeedEventManager {
   }
 
   /**
-   * Generates historical events from context history to initialise the feed with.
+   * Generates historical events from state history to initialise the feed with.
    * If unexpired health events exist then these are registered for health
    * restore processing.
    * @param count max number of events to populate.
@@ -164,8 +165,8 @@ export class FeedEventManager {
     const events: Array<Event> = [];
     const restoreEvents = new Map<string, Event>();
 
-    for (let index=this.#context.history.length-1; index >=0 && events.length < count; index--) {
-      const event = this.#context.history[index];
+    for (let index=this.#state.history.length-1; index >=0 && events.length < count; index--) {
+      const event = this.#state.history[index];
       if (this.#isHealthRestoredEvent(event)) {
         restoreEvents.set(healthId(event), event);
       } else if (this.#isHealthEvent(event)) {
@@ -205,6 +206,6 @@ export class FeedEventManager {
    * @param event
    */
   async addEvent(event: Event) {
-    this.#context.feed.feed.addItem(await this.#createFeedItem(event));
+    this.#state.feed.feed.addItem(await this.#createFeedItem(event));
   }
 }

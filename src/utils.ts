@@ -1,5 +1,5 @@
 import { HostConfigResource, getApi } from './sonarrApiV3';
-import { Context, SonarrApiConfig, SonarrApi, Config } from './types';
+import { SonarrApiConfig, SonarrApi, Config } from './types';
 
 export const HealthTypes = [
   'ApiKeyValidationCheck',
@@ -92,47 +92,6 @@ export function getSonarrApi(config: SonarrApiConfig) {
   return getApi(config.sonarrBaseUrl, config.sonarrApiKey, {
     rejectUnauthorized: !config.sonarrInsecure
   });
-}
-
-export async function updateContextFromConfig(context: Context) {
-  context.sonarrApi = undefined;
-  if (context.config.sonarrBaseUrl && context.config.sonarrApiKey) {
-    try {
-      context.sonarrApi = getSonarrApi(context.config);
-    } catch {} // eslint-disable-line no-empty
-  }
-
-  context.urlBase = context.config.urlBase;
-  // URL base must start and end with a /
-  if (context.urlBase) {
-    if (context.urlBase !== '/') {
-      if (!context.urlBase.startsWith('/')) {
-        context.urlBase = '/' + context.urlBase;
-      }
-      if (!context.urlBase.endsWith('/')) {
-        context.urlBase = context.urlBase + '/';
-      }
-    }
-  } else {
-    context.urlBase = '/';
-  }
-  // Application URL must end with a /
-  context.applicationUrl = context.config.applicationUrl;
-  if (context.applicationUrl) {
-    if (!context.applicationUrl.endsWith('/')) {
-      context.applicationUrl = context.applicationUrl + '/';
-    }
-  } else {
-    context.applicationUrl = context.urlBase;
-  }
-  if (context.sonarrApi) {
-    try {
-      context.hostConfig = await getSonarrHostConfig(context.sonarrApi);
-    } catch {
-      // get config failed so assume API is unusable
-      context.sonarrApi = undefined;
-    }
-  }
 }
 
 export function getSonarrHostConfig(sonarrApi: SonarrApi): Promise<HostConfigResource> {

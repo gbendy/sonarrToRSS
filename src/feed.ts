@@ -1,39 +1,38 @@
 import { Feed } from 'feed';
-import { Context } from './types';
-import { ensureSeries, resolveApplicationUrl } from './server';
 import { FeedEventManager } from './feedEventManager';
+import { State } from './state';
 
 
-export async function init(context: Context) {
-  context.feed?.eventManager?.clear();
+export async function init(state: State) {
+  state.feed?.eventManager?.clear();
 
-  context.feed = {
+  state.feed = {
     feed: new Feed({
       title: 'Sonarr to RSS',
-      description: `Events for ${context.hostConfig?.instanceName ?? 'Sonarr'}`,
-      id: context.config.applicationUrl,
-      link: context.config.applicationUrl,
+      description: `Events for ${state.hostConfig?.instanceName ?? 'Sonarr'}`,
+      id: state.config.applicationUrl,
+      link: state.config.applicationUrl,
       language: 'en',
       copyright: '',
       feedLinks: {
-        rss: resolveApplicationUrl(context, 'rss')
+        rss: state.resolveApplicationUrl('rss')
       },
     }),
-    eventManager: new FeedEventManager(context)
+    eventManager: new FeedEventManager(state)
   };
 
-  const events = context.feed.eventManager.generateHistorical(20);
+  const events = state.feed.eventManager.generateHistorical(20);
   const promises: Array<Promise<unknown>> = [];
   const seriesIds = new Set<number>;
 
   events.forEach(event => {
     const seriesId = event.event.series?.id;
-    if (seriesId !== undefined && !context.seriesData.has(seriesId)) {
+    if (seriesId !== undefined && !state.seriesData.has(seriesId)) {
       seriesIds.add(seriesId);
     }
-    promises.push(context.feed.eventManager.addEvent(event));
+    promises.push(state.feed.eventManager.addEvent(event));
   });
-  promises.push(ensureSeries(context, seriesIds));
+  promises.push(state.ensureSeries(seriesIds));
   return Promise.all(promises);
 }
 
