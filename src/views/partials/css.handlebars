@@ -82,9 +82,49 @@ span.good {
   align-self: center;
 }
 
-heading {
+header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  width: 100%;
+}
+
+header heading {
   font-weight: bold;
   font-size: 1.3em;
+  flex-grow: 1;
+}
+
+header user a {
+  padding-left: 12px;
+}
+
+.svgUserIcon {
+  height: 1.2em;
+}
+
+a.tooltiplink {
+  position: relative;
+}
+
+a.tooltiplinkshow::after {
+  content: attr(data-title);
+  background-color: {{defaultColorInvert 'overlay-border-color' forFeed}};
+  color: {{defaultColor 'color' forFeed}};
+  padding: 6px;
+  border-radius: 4px;
+  border-width: 1px;
+  border-style: solid;
+
+  font-size: 0.8em;
+  line-height: 0.6em;
+  display: block;
+  position: absolute;
+  top: 125%;
+  left: 50%;
+
+  white-space: nowrap;
+  z-index: 1;
 }
 
 events {
@@ -107,12 +147,17 @@ events header>count{
 }
 
 events header>sort {
-  margin-left: 4px;
+  margin-left: 12px;
 }
 
 events header>pagesize {
    white-space: nowrap;
    margin-left: 4px;
+}
+
+events header>pagesize>select {
+   margin-left: 2px;
+   margin-right: 2px;
 }
 
 footer {
@@ -254,13 +299,15 @@ event {
   padding-top: 4px;
 }
 
-.config event release entry.tip {
+.config .tip {
   margin-left: 166px; /* input+label margin */
   max-width: 484px; /* 650 - 166 */
   margin-top: 2px;
-  color: {{defaultColor 'config-tip-color' forFeed}};
 }
 
+.config event release entry.tip {
+  color: {{defaultColor 'config-tip-color' forFeed}};
+}
 
 .config input, .config tip, .config button, .config select {
   margin-left: 16px;
@@ -393,6 +440,11 @@ img {
     border: 2px solid var(--light-overlay-border-color);
   }
 
+  a.tooltiplink:hover::after {
+    background-color: var(--dark-overlay-border-color);
+    color: var(--light-color);
+  }
+
   .pagination a.active {
     background-color: var(--light-pagination-active-bg-color);
     color: var(--light-pagination-active-color);
@@ -449,6 +501,11 @@ img {
     color: var(--dark-color);
     background-color: var(--dark-bg-color);
     border: 2px solid var(--light-overlay-border-color);
+  }
+
+ a.tooltiplink:hover::after {
+    background-color: var(--light-overlay-border-color);
+    color: var(--dark-color);
   }
 
   .pagination a.active {

@@ -1,20 +1,40 @@
 <div class="container">
   <div class="centreColumn config">
-  <heading>Configure Sonarr to RSS</heading>
+    <header>
+      <heading>Configure Sonarr to RSS</heading>
+      {{> user}}
+    </header>
     <events>
       <event>
         <data>
           <detail>
             <episode class="noseries">Host</episode>
             <release>
-              <entry><span class="label">Port Number</span><input id="port" value="{{state.config.port}}" type="number" min="1" max="65535"></entry>
+              <entry><span class="label">Port Number</span><input id="port" value="{{config.port}}" type="number" min="1" max="65535"></entry>
               <entry class="tip"><span id= "portMessage">* Port number this server listens on</span></entry>
-              <entry><span class="label">Listen Address</span><input id="address" value="{{state.config.address}}"></entry>
+              <entry><span class="label">Listen Address</span><input id="address" value="{{config.address}}"></entry>
               <entry class="tip"><span id= "addressMessage">* Address this server listens on</span></entry>
-              <entry><span class="label">Application URL</span><input id="applicationUrl" value="{{state.config.applicationUrl}}"></entry>
-              <entry class="tip"><span id= "applicationUrlMessage">* Public URL to access this server. This is used for links in the feed{{#unless state.config.configured}}<br><i>The above is a default. Verify and change if necessary</i>{{/unless}}</span></entry>
-              <entry><span class="label">URL Base</span><input id="urlBase" value="{{state.config.urlBase}}"></entry>
+              <entry><span class="label">Application URL</span><input id="applicationUrl" value="{{config.applicationUrl}}"></entry>
+              <entry class="tip"><span id= "applicationUrlMessage">* Public URL to access this server. This is used for links in the feed{{#unless config.configured}}<br><i>The above is a default. Verify and change if necessary</i>{{/unless}}</span></entry>
+              <entry><span class="label">URL Base</span><input id="urlBase" value="{{config.urlBase}}"></entry>
               <entry class="tip"><span id= "urlBaseMessage">If behind a path based reverse proxy the path to prefix to local URLs</span></entry>
+            </release>
+          </detail>
+        </data>
+      </event>
+      <event>
+        <data>
+          <detail>
+            <episode class="noseries">User</episode>
+            <release>
+              <entry><span class="label">Username</span><input id="username" value="{{config.username}}" type="text"></entry>
+              <entry class="tip"><span id= "usernameMessage">* Like Sonarr itself Sonarr to RSS requires authentication</span></entry>
+              <entry><span class="label">Password</span><input id="password" type="password" placeholder="{{ifEqual config.configured true 'Enter new password to change' 'Enter password'}}"></entry>
+              <entry class="tip"><span id= "passwordMessage">{{ifEqual config.configured true 'Password' '* Password'}}</span></entry>
+              <entry><span class="label">Confirm password</span><input id="confirmPassword" type="password"></entry>
+              <entry class="tip"><span id= "confirmPasswordMessage">Confirm Password</span></entry>
+              <entry><span class="label">Session Expiry</span><input id="sessionExpire" value="{{config.sessionExpire}}" type="number" min="0"></entry>
+              <entry class="tip"><span id= "sessionExpireMessage">Session expiry in days. Set to 0 to never expire sessions.</span></entry>
             </release>
           </detail>
         </data>
@@ -24,14 +44,14 @@
           <detail>
             <episode class="noseries">Sonarr</episode>
             <release>
-              <entry><span class="label">Sonarr Base URL</span><input id ="sonarrBaseUrl" value="{{state.config.sonarrBaseUrl}}"></entry>
+              <entry><span class="label">Sonarr Base URL</span><input id ="sonarrBaseUrl" value="{{config.sonarrBaseUrl}}"></entry>
               <entry class="tip"><span id= "sonarrBaseUrlMessage">URL to the Sonarr application we are processing web hooks for</span></entry>
-              <entry><span class="label">Insecure</span><input id="sonarrInsecure" {{ifEqual state.config.sonarrInsecure true 'checked' ''}} type="checkbox"></entry>
+              <entry><span class="label">Insecure</span><input id="sonarrInsecure" {{ifEqual config.sonarrInsecure true 'checked' ''}} type="checkbox"></entry>
               <entry class="tip"><span id= "sonarrInsecureMessage">Allow insecure connections to Sonarr</span></entry>
-              <entry><span class="label">API Key</span><input id="sonarrApiKey" value="{{state.config.sonarrApiKey}}"></entry>
+              <entry><span class="label">API Key</span><input id="sonarrApiKey" value="{{config.sonarrApiKey}}"></entry>
               <entry class="tip"><span id= "sonarrApiKeyMessage">API key for the Sonarr application we are processing web hooks for</span></entry>
               <entry><button id="testSonarr" type="button" onclick="testSonarr()">Test</button></entry>
-              <entry class="tip"><span id="testSonarrResult">{{#if state.hostConfig.instanceName}}Connected to {{state.hostConfig.instanceName}}{{else}}Sonarr not found{{/if}}</span></entry>
+              <entry class="tip"><span id="testSonarrResult">{{#if hostConfig.instanceName}}Connected to {{hostConfig.instanceName}}{{else}}Sonarr not found{{/if}}</span></entry>
             </release>
           </detail>
         </data>
@@ -41,26 +61,26 @@
           <detail>
             <episode class="noseries">Feed</episode>
             <release>
-              <entry><span class="label">Title</span><input id ="feedTitle" value="{{state.config.feedTitle}}"></entry>
+              <entry><span class="label">Title</span><input id ="feedTitle" value="{{config.feedTitle}}"></entry>
               <entry class="tip"><span id= "feedTitleMessage">Title of feed.</span></entry>
               <entry><span class="label">Theme</span>
                 <select id ="feedTheme">
-                  <option {{ifEqual state.config.feedTheme 'auto' 'selected' ''}} value="auto">Auto</option>
-                  <option {{ifEqual state.config.feedTheme 'light' 'selected' ''}} value="light">Light</option>
-                  <option {{ifEqual state.config.feedTheme 'dark' 'selected' ''}} value="dark">Dark</option>
+                  <option {{ifEqual config.feedTheme 'auto' 'selected' ''}} value="auto">Auto</option>
+                  <option {{ifEqual config.feedTheme 'light' 'selected' ''}} value="light">Light</option>
+                  <option {{ifEqual config.feedTheme 'dark' 'selected' ''}} value="dark">Dark</option>
                 </select>
               </entry>
               <entry class="tip"><span id= "feedThemeMessage">Theme for feed. Auto will attempt to use the theme specified in the reader.
                 Some readers do not support auto theme in messages so the theme can be overridden here.</span></entry>
-              <entry><span class="label">Health Delay</span><input id="feedHealthDelay" value="{{state.config.feedHealthDelay}}" onChange="feedHealthDelayChanged()" type="number" min="0"></entry>
+              <entry><span class="label">Health Delay</span><input id="feedHealthDelay" value="{{config.feedHealthDelay}}" onChange="feedHealthDelayChanged()" type="number" min="0"></entry>
               <entry class="tip"><span id= "feedHealthDelayMessage">Health issues are often intermittent and resolve within a short timeframe.
                 Setting this to a positive integer will prevent health events from being sent to the feed if they resolve within the given number of minutes.
               </span></entry>
-              <div id="feedHealthDelayTypesWrapper" class="{{ifEqual state.config.feedHealthDelay 0 "collapse" ''}}">
+              <div id="feedHealthDelayTypesWrapper" class="{{ifEqual config.feedHealthDelay 0 "collapse" ''}}">
                 <entry><span class="label">Health Delay Types</span>
                   <select id="feedHealthDelayTypes" multiple size="10">
                     {{#each healthTypes}}
-                      <option value="{{this}}" {{ifInArray this ../state.config.feedHealthDelayTypes 'data-selected' ''}}>{{this}}</option>
+                      <option value="{{this}}" {{ifInArray this ../config.feedHealthDelayTypes 'data-selected' ''}}>{{this}}</option>
                     {{/each}}
                   </select>
                 </entry>
@@ -74,10 +94,10 @@
         <data>
           <detail>
             <release>
-              {{#if state.config.configured}}
-              <entry><button id="saveConfig" type="button" onclick="saveConfig()">Save</button><button type="button" onclick="location.href='{{browseUrl undefined undefined undefined useApplicationUrl}}';">Browse</button></entry>
+              {{#if config.configured}}
+                <entry><button id="saveConfig" type="button" onclick="saveConfig()">Save</button></entry>
               {{else}}
-              <entry><button id="saveConfig" type="button" onclick="saveConfig()">Continue</button></entry>
+                <entry><button id="saveConfig" type="button" onclick="saveConfig()">Continue</button></entry>
               {{/if}}
             </release>
           </detail>

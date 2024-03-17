@@ -1,5 +1,5 @@
 
-const isConfigured = {{state.config.configured}};
+const isConfigured = {{config.configured}};
 
 window.onload = () => {
   if (!isConfigured) {
@@ -52,6 +52,10 @@ function elementIsInteger(element) {
   return elementIsString(element) && /^[+-]?[0-9]+$/.test(element.value) && !Number.isNaN(Number.parseInt(element.value, 10));
 }
 
+function elementIsFloat(element) {
+  return elementIsString(element) && /^[+-]?[0-9]+(\.[0-9]*)?$/.test(element.value) && !Number.isNaN(Number.parseFloat(element.value));
+}
+
 function elementIsInRange(min, max, element) {
   if (elementIsInteger(element)) {
     const value = elementGetInteger(element);
@@ -62,10 +66,19 @@ function elementIsInRange(min, max, element) {
   return false;
 }
 
-
 function elementIsGTE(min, element) {
   if (elementIsInteger(element)) {
     const value = elementGetInteger(element);
+    if (value >= min) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function elementIsFloatGTE(min, element) {
+  if (elementIsFloat(element)) {
+    const value = elementGetFloat(element);
     if (value >= min) {
       return true;
     }
@@ -99,6 +112,11 @@ function elementHasSelection(element) {
   return selected.length > 0;
 }
 
+function elementMatchesString(otherElementName, element) {
+  const otherElement = document.getElementById(otherElementName);
+  return elementIsString(otherElement) && elementIsString(element) && otherElement.value === element.value;
+}
+
 function validate(elementId, validationFunction, getFunction) {
   const element = document.getElementById(elementId);
   const messageElement = document.getElementById(elementId + 'Message');
@@ -119,6 +137,10 @@ function elementGetInteger(element) {
   return Number.parseInt(element.value, 10);
 }
 
+function elementGetFloat(element) {
+  return Number.parseFloat(element.value);
+}
+
 function elementGetBoolean(element) {
   return element.checked
 }
@@ -137,6 +159,10 @@ function validateConfig() {
   const [ addressValid, address ] = validate('address', elementIsNonEmptyString, elementGetString);
   const [ applicationUrlValid, applicationUrl ] = validate('applicationUrl', elementIsHttpUrl, elementGetString);
   const [ urlBaseValid, urlBase ] = validate('urlBase', elementIsString, elementGetString);
+  const [ usernameValid, username ] = validate('username', elementIsNonEmptyString, elementGetString);
+  const [ passwordValid, password ] = validate('password', isConfigured ? elementIsString : elementIsNonEmptyString, elementGetString);
+  const [ confirmPasswordValid, confirmPassword ] = validate('confirmPassword', elementMatchesString.bind(null, 'password'), elementGetString);
+  const [ sessionExpireValid, sessionExpire ] = validate('sessionExpire', elementIsFloatGTE.bind(null, 0), elementGetFloat);
   const [ sonarrBaseUrlValid, sonarrBaseUrl ] = validate('sonarrBaseUrl', elementIsHttpUrlOrEmptyString, elementGetString);
   const [ sonarrInsecureValid, sonarrInsecure ] = validate('sonarrInsecure', elementIsBoolean, elementGetBoolean);
   const [ sonarrApiKeyValid, sonarrApiKey ] = validate('sonarrApiKey', elementIsString, elementGetString);
@@ -146,6 +172,7 @@ function validateConfig() {
   const [ feedHealthDelayTypesValid, feedHealthDelayTypes ] = validate('feedHealthDelayTypes', feedHealthDelay > 0 ? elementHasSelection : elementValid, elementGetSelections);
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
+    !usernameValid || !passwordValid || !confirmPasswordValid || !sessionExpireValid ||
     !sonarrApiKeyValid || !sonarrApiKeyValid ||
     !feedTitleValid || !feedThemeValid || !feedHealthDelayValid || !feedHealthDelayTypesValid) {
     throw 'Invalid Configuration';
@@ -155,6 +182,9 @@ function validateConfig() {
     address,
     applicationUrl,
     urlBase,
+    username,
+    password,
+    sessionExpire,
     sonarrBaseUrl,
     sonarrInsecure,
     sonarrApiKey,
@@ -286,7 +316,7 @@ async function saveConfig() {
       if (json.result === 'OK') {
         saveConfigElement.textContent = 'Saved';
         setTimeout(() => {
-          saveConfigElement.textContent = 'Save';
+          saveConfigElement.textContent = isConfigured ? 'Save' : 'Continue';
         }, 3000);
         if (json.reload) {
           if (!isConfigured) {
@@ -305,7 +335,7 @@ async function saveConfig() {
     clearInterval(progress);
     saveConfigElement.textContent = isString(e) ? e : 'Error saving configuration';
     setTimeout(() => {
-      saveConfigElement.textContent = 'Save';
+      saveConfigElement.textContent = isConfigured ? 'Save' : 'Continue';
     }, 3000);
   } finally {
     saveConfigElement.disabled = false;

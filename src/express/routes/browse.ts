@@ -1,8 +1,7 @@
 import  { Router, Request, Response } from 'express';
 import { ImageCache, SeriesResourceExt } from '../../types';
-import { HealthTypes } from '../../utils';
 import { State } from '../../state';
-import { noCache } from '../middleware';
+import { authenticated } from '../authentication';
 
 /**
  * Parses the given string and returns it as an Integer.
@@ -75,17 +74,8 @@ export default function (state: State) {
   const router = Router();
   const helpers = state.handlebarsHelpers;
 
-  router.get('/', (req: Request, res: Response) => {
+  router.get('/', authenticated(state), (req: Request, res: Response) => {
     res.redirect(state.resolveUrlPath('browse'));
-  });
-
-  router.get('/config', noCache, (req: Request, res: Response) => {
-    res.render('config', {
-      layout: 'config',
-      state: state,
-      healthTypes: HealthTypes,
-      helpers
-    });
   });
 
   // get series banner image
@@ -105,7 +95,7 @@ export default function (state: State) {
   });
 
   // History browsing
-  router.get('/browse/:pageOrId?/:count?', async (req: Request, res: Response) => {
+  router.get('/browse/:pageOrId?/:count?', authenticated(state), async (req: Request, res: Response) => {
     // get and sanitise input parameters
     const totalEvents = state.history.length;
     const count = Math.max(parseInteger(req.params.count, 6), 1);
@@ -194,8 +184,7 @@ export default function (state: State) {
     }
     const countPreset = [ '6', '12', '24', '48', '96' ];
 
-    res.render('home', {
-      instanceName: state.hostConfig?.instanceName ?? 'Sonarr',
+    res.render('browse', state.handlebarOptions({
       events,
       ascending,
       currentPage,
@@ -208,15 +197,14 @@ export default function (state: State) {
       last: end + 1 === totalEvents,
       pagination,
       total: totalEvents,
-      sonarrBaseUrl: state.config.sonarrBaseUrl,
       countPreset,
       standardCount: countPreset.some(v => v === count.toString()),
       canClickEvents: true,
       helpers
-    });
+    }, req));
   });
 
-  router.get('/event/:eventId?', async (req: Request, res: Response) => {
+  router.get('/event/:eventId?', authenticated(state), async (req: Request, res: Response) => {
     const count = parseInteger(req.query.count as string, undefined);
     const ascending = req.query.sort === 'ascending';
 
@@ -225,28 +213,25 @@ export default function (state: State) {
     if (!event) {
       res.statusCode = 400;
       res.statusMessage = `Event ${eventId} not found`;
-      res.render('eventnotfound', {
+      res.render('eventnotfound', state.handlebarOptions({
         eventId,
         count,
         ascending,
         helpers,
-      });
+      }, req));
     } else {
 
       if (event.event.series?.id !== undefined && !state.seriesData.has(event.event.series.id)) {
         await state.ensureSeries(new Set([ event.event.series?.id]));
       }
-      res.render('event', {
-        instanceName: state.hostConfig?.instanceName ?? 'Sonarr',
+      res.render('event', state.handlebarOptions({
         event,
         count,
         ascending,
-        sonarrBaseUrl: state.config.sonarrBaseUrl,
         helpers
-      });
+      }, req));
     }
   });
-
 
   return router;
 }

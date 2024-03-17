@@ -5,16 +5,16 @@ import { forCategory } from '../logger';
 import feed from '../feed';
 import { HealthTypes } from '../utils';
 import { noCache } from './middleware';
-import api from './routes/api';
-import sonarr from './routes/sonarr';
-import feeds from './routes/feeds';
-import browse from './routes/browse';
+import routes from './routes';
+import authentication from './authentication';
 
 const logger = forCategory('server');
 
 export async function start(state: State) {
   const app: Express = express();
   await feed.init(state);
+
+  authentication.preStart(state);
 
   app.engine('handlebars', engine());
   app.set('view engine', 'handlebars');
@@ -24,20 +24,24 @@ export async function start(state: State) {
     logger.info('Server not configured, starting in configuration only mode');
 
     app.use(noCache);
-    app.use('/api/', api(state));
+    app.use('/api/', routes.api(state));
     app.get('/', (req, res) => {
-      res.render('config', {
+      res.render('config', state.handlebarOptions({
         layout: 'config',
-        state: state,
         healthTypes: HealthTypes,
-        helpers: state.handlebarsHelpers
-      });
+        configure: true
+      }, req));
     });
   } else {
-    app.use(browse(state));
-    app.use(feeds(state));
-    app.use(sonarr(state));
-    app.use('/api/', api(state));
+
+    authentication.use(state, app);
+
+    app.use(routes.auth(state));
+    app.use(routes.browse(state));
+    app.use(routes.config(state));
+    app.use(routes.feeds(state));
+    app.use(routes.sonarr(state));
+    app.use('/api/', routes.api(state));
   }
 
   state.server = app.listen(state.config.port, state.config.address, () => {

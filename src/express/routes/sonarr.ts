@@ -4,6 +4,7 @@ import { Event } from '../../types';
 import { forCategory } from '../../logger';
 import { State } from '../../state';
 import { randomString } from '../../utils';
+import { basicLogin } from '../authentication';
 
 const logger = forCategory('sonarr');
 
@@ -40,8 +41,8 @@ export default function (state: State) {
     writeFileSync(state.resolvedHistoryFile, JSON.stringify(state.history), { encoding: 'utf8' });
   };
 
-  router.post('/sonarr', processEvent);
-  router.put('/sonarr', processEvent);
+  router.post('/sonarr', basicLogin(state), processEvent);
+  router.put('/sonarr', basicLogin(state), processEvent);
 
   return router;
 }

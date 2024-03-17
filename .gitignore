@@ -2,3 +2,5 @@ config.json
 history.json
 dist
 node_modules
+passwd
+sessions

@@ -1,9 +1,10 @@
-import { HostConfigResource, WebHookPayload } from './sonarrApiV3';
 import { Config, Events, History, ImageCache, RSSFeed, SeriesResourceExt, SonarrApi } from './types';
-import type { Server } from 'node:http';
+import { HostConfigResource, WebHookPayload } from './sonarrApiV3';
 import { getSonarrApi, getSonarrHostConfig, isErrorWithCode, randomString } from './utils';
+import type { Server } from 'node:http';
 import path from 'node:path';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
+import { Request } from 'express';
 import { forCategory } from './logger';
 
 const logger = forCategory('state');
@@ -27,11 +28,14 @@ export class State {
   urlBase: string = '';
   applicationUrl: string = '';
   resolvedHistoryFile: string;
+  resolvedPasswordFile: string;
+  resolvedSessionDirectory: string;
   history!: History;
   events!: Events;
   seriesData: Map<number, SeriesResourceExt> = new Map<number, SeriesResourceExt>;
   feed!: RSSFeed;
   server!: Server;
+  passportStrategies: { local: string, basic: string };
   hostConfig?: HostConfigResource;
   sonarrApi?: SonarrApi;
   pingId!: string;
@@ -43,7 +47,12 @@ export class State {
     this.configFilename = configFilename;
     this.config = config;
 
+    this.passportStrategies = { local: '', basic: '' };
+
     this.resolvedHistoryFile = path.resolve(this.config.historyFile);
+    this.resolvedPasswordFile = path.resolve(this.config.passwordFile);
+    this.resolvedSessionDirectory = path.resolve(this.config.sessionDirectory);
+
     this.regeneratePingId();
   }
 
@@ -120,6 +129,9 @@ export class State {
   async init() {
     await this.updateFromConfig();
     await this.#loadHistory();
+    if (this.config.sessionSecrets.length === 0) {
+      this.config.sessionSecrets.push(await randomString(32, 's'));
+    }
     return this;
   }
 
@@ -215,6 +227,9 @@ export class State {
       saveConfigUrl: () => {
         return this.resolveUrlPath('/api/saveConfig');
       },
+      localUrl: (url: string) => {
+        return this.resolveUrlPath(url);
+      },
       showBanner: (event: WebHookPayload) => {
         return event.series && event.eventType !== 'SeriesDelete' && event.eventType !== 'Test' && this.seriesData.has(event.series.id);
       },
@@ -242,6 +257,18 @@ export class State {
     };
   }
 
+  handlebarOptions(options: Record<string,unknown>, req: Request & { isAuthenticated?: () => boolean }) {
+    if (!options.helpers) {
+      options.helpers = this.handlebarsHelpers;
+    }
+    options.instanceName = this.hostConfig?.instanceName ?? 'Sonarr';
+    options.sonarrBaseUrl =  this.config.sonarrBaseUrl;
+    options.config = this.config;
+    options.hostConfig = this.hostConfig;
+    options.authenticated = req.isAuthenticated?.();
+    return options;
+  }
+
   regeneratePingId() {
     this.pingId = randomString();
   }
@@ -266,6 +293,17 @@ export class State {
       }
     }
     const state = new State(configFilename, config);
+
+    try {
+      await mkdir(state.resolvedSessionDirectory, { recursive: true, mode: 0o700 });
+    } catch (e) {
+      if (e instanceof Error) {
+        throw `Failed to create session directory ${state.resolvedSessionDirectory}. ${e.message}`;
+      } else {
+        throw e;
+      }
+    }
+
     return state.init();
   }
 }

@@ -1,6 +1,6 @@
 import  express, { Router } from 'express';
 import { Config, SonarrApiConfig } from '../../types';
-import { arraysEqual, getSonarrApi, getSonarrHostConfig, isErrorWithCode, validateSonarrApiConfig, validateUserConfig } from '../../utils';
+import { arraysEqual, getSonarrApi, getSonarrHostConfig, isErrorWithCode, isNonEmptyString, validateSonarrApiConfig, validateUserConfig } from '../../utils';
 import { JSONObject } from '../../sonarrApiV3';
 import { writeFile } from 'node:fs/promises';
 import { forCategory } from '../../logger';
@@ -8,8 +8,17 @@ import feed from '../../feed';
 import { start } from '..';
 import { State } from '../../state';
 import { noCache } from '../middleware';
+import { authenticated, updatePassword } from '../authentication';
 
 const logger = forCategory('api');
+
+function extractPassword(config: Config & { password?: string }) {
+  const password = config.password;
+  if (password !== undefined) {
+    delete config.password;
+  }
+  return isNonEmptyString(password) ? password : undefined;
+}
 
 export default function (state: State) {
   const router = Router();
@@ -23,7 +32,7 @@ export default function (state: State) {
     res.end();
   });
 
-  router.post('/testSonarrUrl', express.json(), async (req, res) => {
+  router.post('/testSonarrUrl', authenticated(state), express.json(), async (req, res) => {
     logger.info('Testing Sonarr URL');
     const sonarrApi = req.body as SonarrApiConfig;
     if (!validateSonarrApiConfig(sonarrApi, true)) {
@@ -55,16 +64,19 @@ export default function (state: State) {
     }
   });
 
-  router.post('/saveConfig', express.json(), async (req, res) => {
+  router.post('/saveConfig', authenticated(state), express.json(), async (req, res) => {
     const postedConfig = req.body as Config;
     logger.info('Updating configuration');
-    if (!validateUserConfig(postedConfig)) {
+    const password = extractPassword(postedConfig);
+
+    if (!validateUserConfig(postedConfig) || (!state.config.configured && !password)) {
       logger.error('Invalid configuration');
       res.statusCode = 400;
       res.statusMessage = 'Invalid Body';
       res.end();
       return;
     }
+
     res.setHeader('content-type', 'application/json; charset=UTF-8');
     try {
       const newConfig = { ...state.config };
@@ -88,6 +100,14 @@ export default function (state: State) {
       const changedUrlBase = newConfig.urlBase !== postedConfig.urlBase;
       if (changedUrlBase) {
         newConfig.urlBase = postedConfig.urlBase;
+      }
+      const changedUsername = newConfig.username !== postedConfig.username;
+      if (changedUsername) {
+        newConfig.username = postedConfig.username;
+      }
+      if (newConfig.sessionExpire !== postedConfig.sessionExpire) {
+        newConfig.sessionExpire = postedConfig.sessionExpire;
+        changedListen = true;
       }
       let changedSonarrApi = false;
       if (newConfig.sonarrBaseUrl !== postedConfig.sonarrBaseUrl) {
@@ -126,25 +146,31 @@ export default function (state: State) {
         result: 'OK',
       };
 
-      if (initialConfig || changedListen || changedApplicationUrl || changedUrlBase || changedSonarrApi || regenerateFeed) {
+      const configChanged = initialConfig || changedListen || changedApplicationUrl || changedUrlBase || changedUsername || changedSonarrApi || regenerateFeed;
+      if (configChanged || password) {
         // write out new config to config file.
-        try {
-          await writeFile(state.configFilename, JSON.stringify(newConfig, null, 2), { encoding: 'utf8' });
-        } catch (e) {
-          if (isErrorWithCode(e)) {
-            // write file error, this is the only throw that should happen
-            logger.error(`Config file ${state.configFilename} cannot be written. ${e.code} ${e.message}`);
-          } else if (e instanceof Error) {
-            logger.error(`Config file ${state.configFilename} cannot be written. ${e.message}`);
-          } else {
-            logger.error(`Config file ${state.configFilename} cannot be written. ${e}`);
+        if (configChanged) {
+          try {
+            await writeFile(state.configFilename, JSON.stringify(newConfig, null, 2), { encoding: 'utf8' });
+          } catch (e) {
+            if (isErrorWithCode(e)) {
+              // write file error, this is the only throw that should happen
+              logger.error(`Config file ${state.configFilename} cannot be written. ${e.code} ${e.message}`);
+            } else if (e instanceof Error) {
+              logger.error(`Config file ${state.configFilename} cannot be written. ${e.message}`);
+            } else {
+              logger.error(`Config file ${state.configFilename} cannot be written. ${e}`);
+            }
+            throw 'Could not write config file';
           }
-          throw 'Could not write config file';
-        }
-        // update local config
-        state.config = newConfig;
+          // update local config
+          state.config = newConfig;
 
-        await state.updateFromConfig();
+          await state.updateFromConfig();
+        }
+        if (password) {
+          updatePassword(state, password);
+        }
         logger.info('Configuration update complete');
 
         // work out what we need to restart to use new config

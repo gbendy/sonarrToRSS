@@ -13,6 +13,8 @@ export interface UserConfig extends SonarrApiConfig {
   address: string;
   applicationUrl: string;
   urlBase: string;
+  username: string;
+  sessionExpire: number;
   feedTitle: string;
   feedTheme: 'auto' | 'light' | 'dark',
   feedHealthDelay: number,
@@ -21,6 +23,9 @@ export interface UserConfig extends SonarrApiConfig {
 
 export interface Config extends UserConfig {
   historyFile: string;
+  sessionDirectory: string;
+  passwordFile: string;
+  sessionSecrets: Array<string>;
   configured: boolean;
 }
 

@@ -1,0 +1,23 @@
+<div class="container">
+  <div class="centreColumn config">
+  <heading>Login to {{config.feedTitle}}</heading>
+    <form action="{{localUrl '/login'}}" method="post">
+      <events>
+        <event>
+          <data>
+            <detail>
+              <release>
+                <entry><span class="label">Username</span><input name="username" id="username" type="text" required autofocus></entry>
+                <entry><span class="label">Password</span><input name="password" id="password" type="password" required></entry>
+                {{#if failed}}
+                <entry class="tip"><span class="error">Username or password incorrect</span></entry>
+                {{/if}}
+                <entry><button class="tip" type="submit">Login</button></entry>
+              </release>
+            </detail>
+          </data>
+        </event>
+      </events>
+    </form>
+  </div>
+</div>

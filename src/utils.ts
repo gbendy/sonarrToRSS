@@ -40,6 +40,10 @@ export function isString(value: unknown): value is string {
   return value?.constructor === String;
 }
 
+export function isNonEmptyString(value: unknown): value is string {
+  return isString(value) && value !== '';
+}
+
 function isUrl(value: unknown): URL | false {
   try {
     return new URL(value as string);
@@ -77,6 +81,8 @@ export function validateUserConfig(config: Config) {
   return validateSonarrApiConfig(config, false) &&
     isNumber(config?.port) && isString(config?.address) &&
     isHttpUrl(config?.applicationUrl) && isString(config?.urlBase) &&
+    isString(config?.username) &&
+    isNumber(config?.sessionExpire) &&
     isString(config?.feedTitle) &&
     (config?.feedTheme === 'auto' || config?.feedTheme === 'light' || config?.feedTheme === 'dark') &&
     isNumber(config?.feedHealthDelay) && isArray(config?.feedHealthDelayTypes);

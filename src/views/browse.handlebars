@@ -1,6 +1,9 @@
 <div class="container">
   <div class="centreColumn">
-  <heading >Event history for <a href="{{sonarrBaseUrl}}">{{instanceName}}</a></heading>
+  <header>
+    <heading>Event history for <a href="{{sonarrBaseUrl}}">{{instanceName}}</a></heading>
+    {{> user}}
+  </header>
     <events>
       <header>
         <count>Events {{start}}-{{end}} of {{total}}</count>

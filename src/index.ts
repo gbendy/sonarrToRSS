@@ -12,12 +12,17 @@ const defaultConfig: Config = {
   sonarrApiKey:'',
   sonarrInsecure: false,
   historyFile: './history.json',
+  sessionDirectory: './sessions',
+  passwordFile: './passwd',
   applicationUrl: '',
   urlBase: '',
+  username: '',
+  sessionExpire: 7,
   feedTitle: 'Sonarr to RSS',
   feedTheme: 'auto',
   feedHealthDelay: 0,
   feedHealthDelayTypes: [],
+  sessionSecrets: [],
   configured: false
 };
 
