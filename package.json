@@ -28,6 +28,7 @@
     "@html-eslint/parser": "^0.23.0",
     "@stylistic/eslint-plugin-ts": "^1.6.2",
     "@types/connect-ensure-login": "^0.1.9",
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/express-session": "^1.18.0",
     "@types/node": "^20.11.19",
@@ -44,6 +45,7 @@
   "dependencies": {
     "argon2": "^0.40.1",
     "connect-ensure-login": "^0.1.1",
+    "cors": "^2.8.5",
     "express-handlebars": "^7.1.2",
     "express-session": "^1.18.0",
     "feed": "^4.2.2",

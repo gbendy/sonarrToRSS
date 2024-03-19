@@ -1,4 +1,5 @@
 import  express, { Router } from 'express';
+import cors from 'cors';
 import { Config, SonarrApiConfig } from '../../types';
 import { arraysEqual, getSonarrApi, getSonarrHostConfig, isErrorWithCode, isNonEmptyString, validateSonarrApiConfig, validateUserConfig } from '../../utils';
 import { JSONObject } from '../../sonarrApiV3';
@@ -26,9 +27,11 @@ export default function (state: State) {
   // copy ping id so we always use the one associated with this
   // instance of the express server.
   const pingId = state.pingId;
-  router.get('/ping', noCache, (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
+  router.get('/ping', noCache, cors({
+    origin: true,
+    methods: 'GET',
+    exposedHeaders: 'x-ping-id'
+  }), (req, res) => {
     res.setHeader('x-ping-id', pingId);
     res.end();
   });
