@@ -28,6 +28,7 @@ export default function (state: State) {
   const pingId = state.pingId;
   router.get('/ping', noCache, (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('x-ping-id', pingId);
     res.end();
   });

@@ -1,0 +1,55 @@
+window.onload = () => {
+  function submitOnEnter(event) {
+      if (event.key !== 'Enter') {
+        return;
+      }
+      login();
+      event.preventDefault();
+  }
+  document.getElementById('username').addEventListener('keyup', submitOnEnter);
+  document.getElementById('password').addEventListener('keyup', submitOnEnter);
+}
+
+async function login() {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const errorMessageEntryElement = document.getElementById('errorMessageEntry');
+  const errorMessageElement = document.getElementById('errorMessage');
+
+  errorMessageEntryElement.classList.add('collapse');
+  errorMessageElement.classList.remove('error');
+  try {
+    if (username === '') {
+      throw 'Enter username';
+    }
+    if (password === '') {
+      throw 'Enter password';
+    }
+    const res = await fetch('{{localUrl '/login'}}',
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          username,
+          password
+        })
+      }
+    );
+    if (res.ok) {
+      const json = await res.json();
+      if (json.result === 'OK') {
+        window.location = json.redirectTo ?? '{{localUrl '/'}}'
+      } else {
+        throw json.error ?? 'Unknown login error';
+      }
+    } else {
+      throw `Login returned unexpected response: ${res.status} ${res.statusText}`;
+    }
+  } catch(e) {
+    errorMessageElement.textContent = e;
+    errorMessageEntryElement.classList.remove('collapse');
+    errorMessageElement.classList.add('error');
+  }
+}

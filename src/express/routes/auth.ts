@@ -7,7 +7,7 @@ export default function (state: State) {
 
   router.get('/login', (req: Request, res: Response) => {
     res.render('login', state.handlebarOptions({
-      layout: 'main',
+      layout: 'login',
       failed: req.query.failed !== undefined
     }, req));
   });

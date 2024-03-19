@@ -1,4 +1,4 @@
-import { Express, RequestHandler, urlencoded } from 'express';
+import { Express, NextFunction, Request, RequestHandler, Response, json, urlencoded } from 'express';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { BasicStrategy } from 'passport-http';
@@ -36,13 +36,13 @@ export function preStart(state: State) {
 async function validateUserPassword(state: State, username: string, password: string, done: Parameters<ConstructorParameters<typeof LocalStrategy>[0]>[2]) {
   try {
     if (state.config.username !== username) {
-      return done(null, false, { message: 'Incorrect username or password.' });
+      return done(null, false, { message: 'Incorrect username or password' });
     }
     const hash = await readFile(state.resolvedPasswordFile, { encoding: 'utf8' });
     if (await argon2.verify(hash, password)) {
       return done(null, { username: state.config.username });
     } else {
-      return done(null, false, { message: 'Incorrect username or password.' });
+      return done(null, false, { message: 'Incorrect username or password' });
     }
   } catch {
     done(null, false, { message: 'Error verifying password'});
@@ -83,14 +83,58 @@ export function use(state: State, app: Express) {
   app.use(passport.session());
 }
 
+function jsonError(res: Response, error: unknown) {
+  res.json({
+    result: 'error',
+    error
+  });
+}
 export function localLogin(state: State) {
   return [
-    urlencoded({ extended: false }),
-    passport.authenticate(state.passportStrategies.local, {
-      successReturnToOrRedirect: '/',
-      failureRedirect: '/login?failed',
-      keepSessionInfo: true
-    })
+    json(),
+    (req: Request, res: Response, next: NextFunction) => {
+      passport.authenticate(state.passportStrategies.local, (
+        err: unknown,
+        user?: Express.User | false | null,
+        info?: { message?: string }) => {
+        if (err) {
+          return jsonError(res, err);
+        }
+        if (!user) {
+          return jsonError(res, info?.message ?? 'Login failed');
+        }
+        req.user = user;
+        const prevSession: typeof req.session & { returnTo?: string } = req.session;
+        req.session.regenerate((err) => {
+          if (err) {
+            return jsonError(res, err);
+          }
+          passport.serializeUser(user, req, (err, obj) => {
+            if (err) {
+              return jsonError(res, err);
+            }
+            const url = prevSession.returnTo ?? '/';
+            const session = req.session as unknown as Record<string,any>; //eslint-disable-line @typescript-eslint/no-explicit-any
+            if (!session.passport) {
+              session.passport = {};
+            }
+            // store user information in session, typically a user id
+            session.passport.user = obj;
+            // save the session before redirection to ensure page
+            // load does not happen before session is saved
+            req.session.save(function(err) {
+              if (err) {
+                return jsonError(res, err);
+              }
+              return res.json({
+                result: 'OK',
+                redirectTo: state.resolveUrlPath(url)
+              });
+            });
+          });
+        });
+      })(req, res, next);
+    }
   ];
 }
 
