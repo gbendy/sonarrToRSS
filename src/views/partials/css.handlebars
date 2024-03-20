@@ -309,11 +309,22 @@ event {
   color: {{defaultColor 'config-tip-color' forFeed}};
 }
 
-.config input, .config tip, .config button, .config select {
+.config .inlineTip {
+  color: {{defaultColor 'config-tip-color' forFeed}};
+  margin-left: 4px;
+  padding-top: 4px;
+}
+
+.config input, .config tip, .config button, .config select, .config .static {
   margin-left: 16px;
   padding: 6px 16px;
   flex: auto;
   width: 100%;
+}
+
+.config .static {
+  padding: 4px 0px;
+  font-weight: bold;
 }
 
 .config .checkboxWrapper {
@@ -461,6 +472,10 @@ img {
   .config event release entry.tip {
     color: var(--light-config-tip-color);
   }
+
+  .config .inlineTip {
+    color: var(--light-config-tip-color);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -522,6 +537,10 @@ img {
   }
 
   .config event release entry.tip {
+    color: var(--dark-config-tip-color);
+  }
+
+  .config .inlineTip {
     color: var(--dark-config-tip-color);
   }
 }

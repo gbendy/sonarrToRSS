@@ -22,6 +22,9 @@ const defaultConfig: Config = {
   feedTheme: 'auto',
   feedHealthDelay: 0,
   feedHealthDelayTypes: [],
+  feedRss: true,
+  feedAtom: true,
+  feedJson: false,
   sessionSecrets: [],
   configured: false
 };

@@ -12,7 +12,7 @@ export default function (state: State) {
   const router = Router();
 
   // Process webhooks from Sonarr
-  router.use('/sonarr', express.json());
+  router.use(state.sonarrUrl, express.json());
 
   const processEvent = async (req: Request, res: Response) => {
     const timestamp = Date.now();
@@ -41,8 +41,8 @@ export default function (state: State) {
     writeFileSync(state.resolvedHistoryFile, JSON.stringify(state.history), { encoding: 'utf8' });
   };
 
-  router.post('/sonarr', basicLogin(state), processEvent);
-  router.put('/sonarr', basicLogin(state), processEvent);
+  router.post(state.sonarrUrl, basicLogin(state), processEvent);
+  router.put(state.sonarrUrl, basicLogin(state), processEvent);
 
   return router;
 }

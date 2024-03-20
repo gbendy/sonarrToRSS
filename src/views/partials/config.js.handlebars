@@ -12,6 +12,24 @@ window.onload = () => {
       option.selected = true;
     }
   });
+  const applicationUrlElement = document.getElementById('applicationUrl');
+  applicationUrlElement.addEventListener('blur', function(event) {
+    const applicationUrl = applicationUrlElement.value.endsWith('/') ? applicationUrlElement.value.slice(0,-1) : applicationUrlElement.value;
+    document.getElementById('feedRssMessage').textContent = applicationUrl + '{{urls.rss}}';
+    document.getElementById('feedAtomMessage').textContent = applicationUrl + '{{urls.atom}}';
+    document.getElementById('feedJsonMessage').textContent = applicationUrl + '{{urls.json}}';
+    document.getElementById('sonarrWebhookMessage').textContent = applicationUrl + '{{urls.sonarr}}';
+  });
+
+  for (const feedType of [ 'Rss', 'Atom', 'Json']) {
+    document.getElementById(`feed${feedType}`).addEventListener('change', function(event) {
+      if (event.target.checked) {
+        document.getElementById(`feed${feedType}Message`).classList.remove('hidden');
+      } else {
+        document.getElementById(`feed${feedType}Message`).classList.add('hidden');
+      }
+    });
+  }
 };
 
 function startProgress(element, prefix, animation = ['⠁','⠂','⠄','⡀','⢀','⠠','⠐','⠈'], interval = 500) {
@@ -168,13 +186,18 @@ function validateConfig() {
   const [ sonarrApiKeyValid, sonarrApiKey ] = validate('sonarrApiKey', elementIsString, elementGetString);
   const [ feedTitleValid, feedTitle ] = validate('feedTitle', elementIsString, elementGetString);
   const [ feedThemeValid, feedTheme ] = validate('feedTheme', elementIsOneOf.bind(null, [ 'auto', 'light', 'dark' ]), elementGetString);
+  const [ feedRssValid, feedRss ] = validate('feedRss', elementIsBoolean, elementGetBoolean);
+  const [ feedAtomValid, feedAtom ] = validate('feedAtom', elementIsBoolean, elementGetBoolean);
+  const [ feedJsonValid, feedJson ] = validate('feedJson', elementIsBoolean, elementGetBoolean);
   const [ feedHealthDelayValid, feedHealthDelay ] = validate('feedHealthDelay', elementIsGTE.bind(null, 0), elementGetInteger);
   const [ feedHealthDelayTypesValid, feedHealthDelayTypes ] = validate('feedHealthDelayTypes', feedHealthDelay > 0 ? elementHasSelection : elementValid, elementGetSelections);
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
     !usernameValid || !passwordValid || !confirmPasswordValid || !sessionExpireValid ||
     !sonarrApiKeyValid || !sonarrApiKeyValid ||
-    !feedTitleValid || !feedThemeValid || !feedHealthDelayValid || !feedHealthDelayTypesValid) {
+    !feedTitleValid || !feedThemeValid ||
+    !feedRssValid || !feedAtomValid || !feedJsonValid ||
+    !feedHealthDelayValid || !feedHealthDelayTypesValid) {
     throw 'Invalid Configuration';
   }
   return {
@@ -190,6 +213,9 @@ function validateConfig() {
     sonarrApiKey,
     feedTitle,
     feedTheme,
+    feedRss,
+    feedAtom,
+    feedJson,
     feedHealthDelay,
     feedHealthDelayTypes
   }

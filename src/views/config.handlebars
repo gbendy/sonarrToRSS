@@ -11,13 +11,15 @@
             <episode class="noseries">Host</episode>
             <release>
               <entry><span class="label">Port Number</span><input id="port" value="{{config.port}}" type="number" min="1" max="65535"></entry>
-              <entry class="tip"><span id= "portMessage">* Port number this server listens on</span></entry>
+              <entry class="tip"><span id="portMessage">* Port number this server listens on</span></entry>
               <entry><span class="label">Listen Address</span><input id="address" value="{{config.address}}"></entry>
-              <entry class="tip"><span id= "addressMessage">* Address this server listens on</span></entry>
+              <entry class="tip"><span id="addressMessage">* Address this server listens on</span></entry>
               <entry><span class="label">Application URL</span><input id="applicationUrl" value="{{config.applicationUrl}}"></entry>
-              <entry class="tip"><span id= "applicationUrlMessage">* Public URL to access this server. This is used for links in the feed{{#unless config.configured}}<br><i>The above is a default. Verify and change if necessary</i>{{/unless}}</span></entry>
+              <entry class="tip"><span id="applicationUrlMessage">* Public URL to access this server. This is used for links in the feed{{#unless config.configured}}<br><i>The above is a default. Verify and change if necessary</i>{{/unless}}</span></entry>
+              <entry><span class="label">Webhook URL</span><span class="static" id="sonarrWebhookMessage">{{applicationUrl urls.sonarr}}</span></entry>
+              <entry class="tip"><span>Configure Sonarr Webhook URL to the above</span></entry>
               <entry><span class="label">URL Base</span><input id="urlBase" value="{{config.urlBase}}"></entry>
-              <entry class="tip"><span id= "urlBaseMessage">If behind a path based reverse proxy the path to prefix to local URLs</span></entry>
+              <entry class="tip"><span id="urlBaseMessage">If behind a path based reverse proxy the path to prefix to local URLs</span></entry>
             </release>
           </detail>
         </data>
@@ -28,13 +30,13 @@
             <episode class="noseries">User</episode>
             <release>
               <entry><span class="label">Username</span><input id="username" value="{{config.username}}" type="text"></entry>
-              <entry class="tip"><span id= "usernameMessage">* Like Sonarr itself Sonarr to RSS requires authentication</span></entry>
+              <entry class="tip"><span id="usernameMessage">* Like Sonarr itself Sonarr to RSS requires authentication</span></entry>
               <entry><span class="label">Password</span><input id="password" type="password" placeholder="{{ifEqual config.configured true 'Enter new password to change' 'Enter password'}}"></entry>
-              <entry class="tip"><span id= "passwordMessage">{{ifEqual config.configured true 'Password' '* Password'}}</span></entry>
+              <entry class="tip"><span id="passwordMessage">{{ifEqual config.configured true 'Password' '* Password'}}</span></entry>
               <entry><span class="label">Confirm password</span><input id="confirmPassword" type="password"></entry>
-              <entry class="tip"><span id= "confirmPasswordMessage">Confirm Password</span></entry>
+              <entry class="tip"><span id="confirmPasswordMessage">Confirm Password</span></entry>
               <entry><span class="label">Session Expiry</span><input id="sessionExpire" value="{{config.sessionExpire}}" type="number" min="0"></entry>
-              <entry class="tip"><span id= "sessionExpireMessage">Session expiry in days. Set to 0 to never expire sessions.</span></entry>
+              <entry class="tip"><span id="sessionExpireMessage">Session expiry in days. Set to 0 to never expire sessions.</span></entry>
             </release>
           </detail>
         </data>
@@ -45,11 +47,11 @@
             <episode class="noseries">Sonarr</episode>
             <release>
               <entry><span class="label">Sonarr Base URL</span><input id ="sonarrBaseUrl" value="{{config.sonarrBaseUrl}}"></entry>
-              <entry class="tip"><span id= "sonarrBaseUrlMessage">URL to the Sonarr application we are processing web hooks for</span></entry>
+              <entry class="tip"><span id="sonarrBaseUrlMessage">URL to the Sonarr application we are processing web hooks for</span></entry>
               <entry><span class="label">Insecure</span><input id="sonarrInsecure" {{ifEqual config.sonarrInsecure true 'checked' ''}} type="checkbox"></entry>
-              <entry class="tip"><span id= "sonarrInsecureMessage">Allow insecure connections to Sonarr</span></entry>
+              <entry class="tip"><span id="sonarrInsecureMessage">Allow insecure connections to Sonarr</span></entry>
               <entry><span class="label">API Key</span><input id="sonarrApiKey" value="{{config.sonarrApiKey}}"></entry>
-              <entry class="tip"><span id= "sonarrApiKeyMessage">API key for the Sonarr application we are processing web hooks for</span></entry>
+              <entry class="tip"><span id="sonarrApiKeyMessage">API key for the Sonarr application we are processing web hooks for</span></entry>
               <entry><button id="testSonarr" type="button" onclick="testSonarr()">Test</button></entry>
               <entry class="tip"><span id="testSonarrResult">{{#if hostConfig.instanceName}}Connected to {{hostConfig.instanceName}}{{else}}Sonarr not found{{/if}}</span></entry>
             </release>
@@ -62,7 +64,10 @@
             <episode class="noseries">Feed</episode>
             <release>
               <entry><span class="label">Title</span><input id ="feedTitle" value="{{config.feedTitle}}"></entry>
-              <entry class="tip"><span id= "feedTitleMessage">Title of feed.</span></entry>
+              <entry class="tip"><span id="feedTitleMessage">Title of feed.</span></entry>
+              <entry><span class="label">RSS</span><input id="feedRss" {{ifEqual config.feedRss true 'checked' ''}} type="checkbox"><span class="inlineTip{{ifEqual config.feedRss true '' ' hidden' }}" id="feedRssMessage">{{applicationUrl urls.rss}}</span></entry>
+              <entry><span class="label">Atom</span><input id="feedAtom" {{ifEqual config.feedAtom true 'checked' ''}} type="checkbox"><span class="inlineTip{{ifEqual config.feedAtom true '' ' hidden' }}" id="feedAtomMessage">{{applicationUrl urls.atom}}</span></entry>
+              <entry><span class="label">Json</span><input id="feedJson" {{ifEqual config.feedJson true 'checked' ''}} type="checkbox"><span class="inlineTip{{ifEqual config.feedJson true '' ' hidden' }}" id="feedJsonMessage">{{applicationUrl urls.json}}</span></entry>
               <entry><span class="label">Theme</span>
                 <select id ="feedTheme">
                   <option {{ifEqual config.feedTheme 'auto' 'selected' ''}} value="auto">Auto</option>
@@ -70,10 +75,10 @@
                   <option {{ifEqual config.feedTheme 'dark' 'selected' ''}} value="dark">Dark</option>
                 </select>
               </entry>
-              <entry class="tip"><span id= "feedThemeMessage">Theme for feed. Auto will attempt to use the theme specified in the reader.
+              <entry class="tip"><span id="feedThemeMessage">Theme for feed. Auto will attempt to use the theme specified in the reader.
                 Some readers do not support auto theme in messages so the theme can be overridden here.</span></entry>
               <entry><span class="label">Health Delay</span><input id="feedHealthDelay" value="{{config.feedHealthDelay}}" onChange="feedHealthDelayChanged()" type="number" min="0"></entry>
-              <entry class="tip"><span id= "feedHealthDelayMessage">Health issues are often intermittent and resolve within a short timeframe.
+              <entry class="tip"><span id="feedHealthDelayMessage">Health issues are often intermittent and resolve within a short timeframe.
                 Setting this to a positive integer will prevent health events from being sent to the feed if they resolve within the given number of minutes.
               </span></entry>
               <div id="feedHealthDelayTypesWrapper" class="{{ifEqual config.feedHealthDelay 0 "collapse" ''}}">
@@ -84,7 +89,7 @@
                     {{/each}}
                   </select>
                 </entry>
-                <entry class="tip"><span id= "feedHealthDelayTypesMessage">Select the types of health messages to delay</span></entry>
+                <entry class="tip"><span id="feedHealthDelayTypesMessage">Select the types of health messages to delay</span></entry>
               </div>
             </release>
           </detail>

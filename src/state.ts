@@ -164,6 +164,22 @@ export class State {
     return `${this.applicationUrl}${path.startsWith('/') ? path.slice(1) : path}`;
   }
 
+  get rssUrl() {
+    return '/rss';
+  }
+
+  get atomUrl() {
+    return '/atom';
+  }
+
+  get jsonUrl() {
+    return '/json';
+  }
+
+  get sonarrUrl() {
+    return '/sonarr';
+  }
+
   get handlebarsHelpers() {
     return {
       dateTime: (date: number) => {
@@ -229,6 +245,9 @@ export class State {
       },
       localUrl: (url: string) => {
         return this.resolveUrlPath(url);
+      },
+      applicationUrl: (url: string) => {
+        return this.resolveApplicationUrl(url);
       },
       showBanner: (event: WebHookPayload) => {
         return event.series && event.eventType !== 'SeriesDelete' && event.eventType !== 'Test' && this.seriesData.has(event.series.id);

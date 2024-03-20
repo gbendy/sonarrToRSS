@@ -18,7 +18,10 @@ export interface UserConfig extends SonarrApiConfig {
   feedTitle: string;
   feedTheme: 'auto' | 'light' | 'dark',
   feedHealthDelay: number,
-  feedHealthDelayTypes: Array<string>
+  feedHealthDelayTypes: Array<string>,
+  feedRss: boolean,
+  feedAtom: boolean,
+  feedJson: boolean
 }
 
 export interface Config extends UserConfig {

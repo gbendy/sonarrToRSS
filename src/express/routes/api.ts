@@ -134,6 +134,18 @@ export default function (state: State) {
         newConfig.feedTheme = postedConfig.feedTheme;
         regenerateFeed = true;
       }
+      if (newConfig.feedRss !== postedConfig.feedRss) {
+        newConfig.feedRss = postedConfig.feedRss;
+        changedListen = true;
+      }
+      if (newConfig.feedAtom !== postedConfig.feedAtom) {
+        newConfig.feedAtom = postedConfig.feedAtom;
+        changedListen = true;
+      }
+      if (newConfig.feedJson !== postedConfig.feedJson) {
+        newConfig.feedJson = postedConfig.feedJson;
+        changedListen = true;
+      }
       if (newConfig.feedHealthDelay !== postedConfig.feedHealthDelay) {
         newConfig.feedHealthDelay = postedConfig.feedHealthDelay;
         regenerateFeed = true;
