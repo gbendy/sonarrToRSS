@@ -33,6 +33,12 @@ export async function start(state: State) {
       res.render('config', state.handlebarOptions({
         layout: 'config',
         healthTypes: HealthTypes,
+        urls: {
+          rss: state.rssUrl,
+          atom: state.atomUrl,
+          json: state.jsonUrl,
+          sonarr: state.sonarrUrl
+        },
         configure: true
       }, req));
     });

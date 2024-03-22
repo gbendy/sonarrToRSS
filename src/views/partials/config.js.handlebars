@@ -1,9 +1,20 @@
 
 const isConfigured = {{config.configured}};
 
+function updateApplicationUrlUrls(event) {
+  const applicationUrlElement = document.getElementById('applicationUrl');
+
+  const applicationUrl = applicationUrlElement.value.endsWith('/') ? applicationUrlElement.value.slice(0,-1) : applicationUrlElement.value;
+  document.getElementById('feedRssMessage').textContent = applicationUrl + '{{urls.rss}}';
+  document.getElementById('feedAtomMessage').textContent = applicationUrl + '{{urls.atom}}';
+  document.getElementById('feedJsonMessage').textContent = applicationUrl + '{{urls.json}}';
+  document.getElementById('sonarrWebhookMessage').textContent = applicationUrl + '{{urls.sonarr}}';
+}
+
 window.onload = () => {
   if (!isConfigured) {
     document.getElementById('applicationUrl').value = document.location.href;
+    updateApplicationUrlUrls();
   }
 
   const delayTypes = document.getElementById('feedHealthDelayTypes');
@@ -12,14 +23,7 @@ window.onload = () => {
       option.selected = true;
     }
   });
-  const applicationUrlElement = document.getElementById('applicationUrl');
-  applicationUrlElement.addEventListener('blur', function(event) {
-    const applicationUrl = applicationUrlElement.value.endsWith('/') ? applicationUrlElement.value.slice(0,-1) : applicationUrlElement.value;
-    document.getElementById('feedRssMessage').textContent = applicationUrl + '{{urls.rss}}';
-    document.getElementById('feedAtomMessage').textContent = applicationUrl + '{{urls.atom}}';
-    document.getElementById('feedJsonMessage').textContent = applicationUrl + '{{urls.json}}';
-    document.getElementById('sonarrWebhookMessage').textContent = applicationUrl + '{{urls.sonarr}}';
-  });
+  document.getElementById('applicationUrl').addEventListener('blur', updateApplicationUrlUrls);
 
   for (const feedType of [ 'Rss', 'Atom', 'Json']) {
     document.getElementById(`feed${feedType}`).addEventListener('change', function(event) {

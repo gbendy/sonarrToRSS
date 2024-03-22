@@ -27,6 +27,7 @@ export class State {
   config: Config;
   urlBase: string = '';
   applicationUrl: string = '';
+  dataDirectory: string;
   resolvedHistoryFile: string;
   resolvedPasswordFile: string;
   resolvedSessionDirectory: string;
@@ -44,14 +45,16 @@ export class State {
     configFilename: string,
     config: Config,
   ) {
-    this.configFilename = configFilename;
+    this.configFilename = path.resolve(configFilename);
     this.config = config;
 
     this.passportStrategies = { local: '', basic: '' };
 
-    this.resolvedHistoryFile = path.resolve(this.config.historyFile);
-    this.resolvedPasswordFile = path.resolve(this.config.passwordFile);
-    this.resolvedSessionDirectory = path.resolve(this.config.sessionDirectory);
+    this.dataDirectory = path.dirname(this.configFilename);
+    logger.info(`Data directory: ${this.dataDirectory}`);
+    this.resolvedHistoryFile = path.join(this.dataDirectory, this.config.historyFile);
+    this.resolvedPasswordFile = path.join(this.dataDirectory, this.config.passwordFile);
+    this.resolvedSessionDirectory = path.join(this.dataDirectory, this.config.sessionDirectory);
 
     this.regeneratePingId();
   }
@@ -124,6 +127,7 @@ export class State {
       }
 
       this.history = [];
+      this.events = {};
     });
   }
 

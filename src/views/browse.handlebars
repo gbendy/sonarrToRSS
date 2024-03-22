@@ -6,7 +6,7 @@
   </header>
     <events>
       <header>
-        <count>Events {{start}}-{{end}} of {{total}}</count>
+        <count>{{#unless noHistory}}Events {{start}}-{{end}} of {{total}}{{else}}No events recorded{{/unless}}</count>
         <pagesize>Show <select onChange="location.href=`{{browseUrl startEventId undefined undefined useApplicationUrl}}/${this.value}{{ascendingQuery ascending}}`;">
           {{#unless standardCount}}
             <option selected value="{{count}}">{{count}}</option>
@@ -15,7 +15,10 @@
           <option {{ifEqual ../count this 'selected' ''}} value="{{this}}">{{this}}</option>
           {{/each}}
         </select> per page </pagesize>
-        <sort> <select onChange="location.href=`{{browseUrl currentPage count undefined useApplicationUrl}}?sort=${this.value}`;">
+        <sort>
+        <select
+          onChange="location.href=`{{#unless noHistory}}{{browseUrl currentPage count undefined useApplicationUrl}}{{else}}{{browseUrl 0 count undefined useApplicationUrl}}{{/unless}}?sort=${this.value}`;"
+        >
           <option value="descending" {{ifEqual ascending false 'selected' ''}}>Newest First</option>
           <option value="ascending" {{ifEqual ascending true 'selected' ''}}>Oldest First</option>
         </select></sort>

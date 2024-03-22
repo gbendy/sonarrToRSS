@@ -1,4 +1,5 @@
 <nav class="pagination">
+  {{#unless noHistory}}
   <a href="{{prevUrl currentPage count ascending useApplicationUrl}}"
   {{#if first}}
   class="hidden"
@@ -16,4 +17,5 @@
   class="hidden"
   {{/if}}
   >&raquo;</a>
+  {{/unless}}
 </nav>
