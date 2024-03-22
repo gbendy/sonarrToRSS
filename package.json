@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "mk-favicon": "convert -background transparent -define 'icon:auto-resize=16,24,32,48,64' logos/sonarrToRSS.svg src/favicon.ico"
   },
   "repository": {
     "type": "git",
@@ -35,6 +36,7 @@
     "@types/passport": "^1.0.16",
     "@types/passport-http": "^0.3.11",
     "@types/passport-local": "^1.0.38",
+    "@types/serve-favicon": "^2.5.7",
     "@types/session-file-store": "^1.2.5",
     "eslint": "^8.57.0",
     "nodemon": "^3.0.3",
@@ -52,6 +54,7 @@
     "passport": "^0.7.0",
     "passport-http": "^0.3.0",
     "passport-local": "^1.0.0",
+    "serve-favicon": "^2.5.0",
     "session-file-store": "^1.5.0"
   }
 }

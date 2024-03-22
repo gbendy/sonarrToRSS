@@ -7,6 +7,7 @@ import { HealthTypes } from '../utils';
 import { noCache } from './middleware';
 import routes from './routes';
 import authentication from './authentication';
+import serveFavicon from 'serve-favicon';
 
 const logger = forCategory('server');
 
@@ -20,6 +21,9 @@ export async function start(state: State) {
   app.set('view engine', 'handlebars');
   app.set('views', './src/views');
   app.disable('x-powered-by');
+
+  app.use(serveFavicon('./src/favicon.ico'));
+
   if (!state.config.configured) {
     logger.info('Server not configured, starting in configuration only mode');
 
@@ -33,7 +37,6 @@ export async function start(state: State) {
       }, req));
     });
   } else {
-
     authentication.use(state, app);
 
     app.use(routes.auth(state));
