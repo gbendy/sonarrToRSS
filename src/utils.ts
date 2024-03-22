@@ -85,7 +85,7 @@ export function validateUserConfig(config: Config) {
     isNumber(config?.sessionExpire) &&
     isString(config?.feedTitle) &&
     (config?.feedTheme === 'auto' || config?.feedTheme === 'light' || config?.feedTheme === 'dark') &&
-    isBoolean(config?.feedRss) && isBoolean(config?.feedAtom) && isBoolean(config?.feedJson);
+    isBoolean(config?.feedRss) && isBoolean(config?.feedAtom) && isBoolean(config?.feedJson) &&
     isNumber(config?.feedHealthDelay) && isArray(config?.feedHealthDelayTypes);
 }
 
