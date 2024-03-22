@@ -89,10 +89,6 @@ export function validateUserConfig(config: Config) {
     isNumber(config?.feedHealthDelay) && isArray(config?.feedHealthDelayTypes);
 }
 
-export const sonarrApiKeys = [ 'sonarrBaseUrl', 'sonarrApiKey' , 'sonarrInsecure' ];
-
-export const userConfigKeys = [ ...sonarrApiKeys, 'port', 'address', 'applicationUrl', 'urlBase' ];
-
 export function validateConfig(config: Config) {
   return validateUserConfig(config) && isString(config?.historyFile) && isBoolean(config?.configured);
 }
