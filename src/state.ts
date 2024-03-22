@@ -58,11 +58,7 @@ export class State {
 
   async updateFromConfig() {
     this.sonarrApi = undefined;
-    if (this.config.sonarrBaseUrl && this.config.sonarrApiKey) {
-      try {
-        this.sonarrApi = getSonarrApi(this.config);
-      } catch {} // eslint-disable-line no-empty
-    }
+    await this.ensureSonarrApi();
 
     this.urlBase = this.config.urlBase;
     // URL base must start and end with a /
@@ -87,9 +83,14 @@ export class State {
     } else {
       this.applicationUrl = this.urlBase;
     }
+  }
 
-    if (this.sonarrApi) {
+  async ensureSonarrApi() {
+    if (!this.sonarrApi && this.config.sonarrBaseUrl && this.config.sonarrApiKey) {
       try {
+        // there should be a Sonarr Api but isn't
+        this.hostConfig = undefined;
+        this.sonarrApi = getSonarrApi(this.config);
         this.hostConfig = await getSonarrHostConfig(this.sonarrApi);
       } catch {
         // get config failed so assume API is unusable
@@ -136,6 +137,7 @@ export class State {
   }
 
   async ensureSeries(seriesIds: Set<number>) {
+    await this.ensureSonarrApi();
     if (!this.sonarrApi) {
       return;
     }

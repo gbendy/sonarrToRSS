@@ -30,7 +30,7 @@ export default function (state: State) {
     res.end('ok');
 
     if (event.event.series?.id !== undefined && !state.seriesData.has(event.event.series.id)) {
-      state.ensureSeries(new Set([ event.event.series?.id]));
+      state.ensureSeries(new Set([ event.event.series?.id ]));
     }
     try {
       await state.feed.eventManager.processNew(event);
