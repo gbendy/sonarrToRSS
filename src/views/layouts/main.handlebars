@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Sonarr Webhooks</title>
+    <title>{{title}}</title>
     <style>
     {{> css }}
     </style>
+    {{#if script}}
+    <script>
+    {{> (lookup . 'script') }}
+    </script>
+    {{/if}}
 </head>
 <body>
 

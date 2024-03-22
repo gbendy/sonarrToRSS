@@ -7,8 +7,8 @@ export default function (state: State) {
 
   router.get('/login', (req: Request, res: Response) => {
     res.render('login', state.handlebarOptions({
-      layout: 'login',
-      failed: req.query.failed !== undefined
+      title: 'Sonarr Webhooks Login',
+      script: 'login.js'
     }, req));
   });
 

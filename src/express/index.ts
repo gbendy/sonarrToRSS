@@ -6,6 +6,7 @@ import feed from '../feed';
 import { HealthTypes } from '../utils';
 import { noCache } from './middleware';
 import routes from './routes';
+import { handlebarOptions as configHandlebarOptions } from './routes/config';
 import authentication from './authentication';
 import serveFavicon from 'serve-favicon';
 
@@ -30,17 +31,7 @@ export async function start(state: State) {
     app.use(noCache);
     app.use('/api/', routes.api(state));
     app.get('/', (req, res) => {
-      res.render('config', state.handlebarOptions({
-        layout: 'config',
-        healthTypes: HealthTypes,
-        urls: {
-          rss: state.rssUrl,
-          atom: state.atomUrl,
-          json: state.jsonUrl,
-          sonarr: state.sonarrUrl
-        },
-        configure: true
-      }, req));
+      res.render('config', configHandlebarOptions(state, req));
     });
   } else {
     authentication.use(state, app);

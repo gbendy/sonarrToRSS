@@ -286,6 +286,9 @@ export class State {
     if (!options.helpers) {
       options.helpers = this.handlebarsHelpers;
     }
+    if (!options.title) {
+      options.title = 'Sonarr Webhooks';
+    }
     options.instanceName = this.hostConfig?.instanceName ?? 'Sonarr';
     options.sonarrBaseUrl =  this.config.sonarrBaseUrl;
     options.config = this.config;
