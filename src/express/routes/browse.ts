@@ -215,7 +215,9 @@ export default function (state: State) {
       res.statusCode = 400;
       res.statusMessage = `Event ${eventId} not found`;
       res.render('eventnotfound', state.handlebarOptions({
-        eventId,
+        event: {
+          id: eventId
+        },
         count,
         ascending,
         helpers,

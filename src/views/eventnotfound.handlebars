@@ -1,6 +1,13 @@
 <div class="container">
   <div class="centreColumn">
-  <heading >Event {{eventId}} not found.</heading>
-  <footer><browse><a href="{{browseUrl 0 count ascending useApplicationUrl}}">Browse</a></browse></footer>
+    <header>
+      <heading>Event history for <a href="{{sonarrBaseUrl}}">{{instanceName}}</a></heading>
+      {{> user}}
+    </header>
+    <events class="single">
+    <header>
+      <count>Event {{event.id}} not found.</count>
+    </header>
+    </events>
   </div>
 </div>
