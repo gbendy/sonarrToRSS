@@ -1,0 +1,3 @@
+#!/bin/sh
+
+setpriv --reuid=$PUID --regid=$PGID --clear-groups node index.js /data/config.json
