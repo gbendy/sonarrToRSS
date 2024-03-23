@@ -48,6 +48,7 @@
     "argon2": "^0.40.1",
     "connect-ensure-login": "^0.1.1",
     "cors": "^2.8.5",
+    "express": "^4.19.1",
     "express-handlebars": "^7.1.2",
     "express-session": "^1.18.0",
     "feed": "^4.2.2",
