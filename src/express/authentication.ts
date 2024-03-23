@@ -76,7 +76,7 @@ export function use(state: State, app: Express) {
 
     store: new FileStore({
       path: state.resolvedSessionDirectory,
-      logFn: logger.info,
+      logFn: () => {},
       ttl: sessionExpireSeconds
     })
   }));
