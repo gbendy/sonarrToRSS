@@ -1,0 +1,6 @@
+.git
+node_modules
+config.json
+history.json
+sessions
+passwd
