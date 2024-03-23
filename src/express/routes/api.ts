@@ -191,13 +191,7 @@ export default function (state: State) {
 
         // work out what we need to restart to use new config
         if (initialConfig || changedListen) {
-          // restart server, will also restart feed
-          logger.info(`Server connection configuration changed. Restarting to listen on ${newConfig.address}:${newConfig.port}`);
-
           state.regeneratePingId();
-          state.server.close(() => {
-            start(state);
-          });
           responseData.reload = true;
           responseData.pingId = state.pingId;
         } else {
@@ -214,8 +208,15 @@ export default function (state: State) {
       } else {
         logger.info('No config changes found');
       }
-      res.write(JSON.stringify(responseData));
-      res.end();
+      res.end(JSON.stringify(responseData), () => {
+        if (initialConfig || changedListen) {
+          // restart server, will also restart feed
+          logger.info(`Server connection configuration changed. Restarting to listen on ${newConfig.address}:${newConfig.port}`);
+          state.server.close(() => {
+            start(state);
+          });
+        }
+      });
     } catch (message) {
       res.write(JSON.stringify({
         result: 'FAILED',

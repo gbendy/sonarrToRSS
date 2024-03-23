@@ -303,6 +303,7 @@ async function reloadAndRedirect(message, applicationUrl, redirectUrl, expectedP
 
   startProgress(overlayMessage, message);
   const pingUrl = appendPath(applicationUrl, 'api/ping');
+  let wait = 312.5;
   async function ping() {
     try {
       const res = await fetch(pingUrl);
@@ -314,9 +315,12 @@ async function reloadAndRedirect(message, applicationUrl, redirectUrl, expectedP
       }
     } catch {
     }
-    setTimeout(ping, 500);
+    if (wait < 5000) {
+      wait *= 2;
+    }
+    setTimeout(ping, wait);
   }
-  ping();
+  setTimeout(ping, wait);
 }
 
 async function saveConfig() {
