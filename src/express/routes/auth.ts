@@ -17,7 +17,7 @@ export default function (state: State) {
   router.get('/logout', authenticated(state), (req: Request, res: Response, next: NextFunction) => {
     req.logout(function(err) {
       if (err) { return next(err); }
-      res.redirect('/');
+      res.redirect(state.resolveUrlPath('/'));
     });
   });
 

@@ -110,8 +110,6 @@ async function testSonarr() {
   const sonarrApiKeyElement = document.getElementById('sonarrApiKey');
   const sonarrTestElement = document.getElementById('testSonarr');
 
-  const testUrl='{{testSonarrUrl}}';
-
   responseElement.classList.remove('error', 'good');
   sonarrTestElement.disabled = true;
   let progress;
@@ -129,7 +127,7 @@ async function testSonarr() {
     }
     progress = startProgress(sonarrTestElement, 'Testing');
 
-    const res = await fetch('{{testSonarrUrl}}',
+    const res = await fetch(resolveUrlPath('api/testSonarrUrl'),
       {
         method: 'POST',
         headers: {
@@ -205,7 +203,7 @@ async function saveConfig() {
     progress = startProgress(saveConfigElement, 'Saving');
     const config = validateConfig();
 
-    const res = await fetch('api/saveConfig',
+    const res = await fetch(resolveUrlPath('api/saveConfig'),
       {
         method: 'POST',
         headers: {

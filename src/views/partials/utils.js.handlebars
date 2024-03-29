@@ -134,3 +134,13 @@ function elementGetSelections(element) {
 function appendPath(source, path) {
   return (source.endsWith('/') ? source : (source + '/')) + path;
 }
+
+function ensureStartsWith(string, startsWith) {
+  return string.startsWith(startsWith) ?
+    string :
+    startsWith + string;
+}
+
+function resolveUrlPath(path) {
+  return appendPath(ensureStartsWith(elementGetString(document.getElementById('urlBase')),'/'), path);
+}

@@ -96,7 +96,7 @@ export function localLogin(state: State) {
     (req: Request, res: Response) => {
       const session: typeof req.session & { returnTo?: string, messages?: Array<string> } = req.session;
       if (req.user) {
-        const url = session?.returnTo ?? '/'
+        const url = session?.returnTo ?? '/';
         delete session?.returnTo;
         res.json({
           result: 'OK',
@@ -104,7 +104,7 @@ export function localLogin(state: State) {
         });
       }
     },
-    (err: Error, req: Request, res: Response, next: NextFunction) => {
+    (err: Error, req: Request, res: Response, next: NextFunction) => { //eslint-disable-line @typescript-eslint/no-unused-vars
       const session: typeof req.session & { returnTo?: string, messages?: Array<string> } = req.session;
       const message = session.messages?.[0] ?? 'Login failed';
       delete session?.messages;

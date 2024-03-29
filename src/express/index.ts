@@ -3,7 +3,6 @@ import { engine } from 'express-handlebars';
 import { State } from '../state';
 import { forCategory } from '../logger';
 import feed from '../feed';
-import { HealthTypes } from '../utils';
 import { noCache } from './middleware';
 import routes from './routes';
 import { handlebarOptions as configHandlebarOptions } from './routes/config';

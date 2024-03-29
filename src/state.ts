@@ -243,12 +243,6 @@ export class State {
         const path = `banner/${seriedId}`;
         return applicationUrl ? this.resolveApplicationUrl(path) : this.resolveUrlPath(path);
       },
-      testSonarrUrl: () => {
-        return this.resolveUrlPath('/api/testSonarrUrl');
-      },
-      saveConfigUrl: () => {
-        return this.resolveUrlPath('/api/saveConfig');
-      },
       localUrl: (url: string) => {
         return this.resolveUrlPath(url);
       },
