@@ -3,7 +3,7 @@
   <Name>sonarrtorss</Name>
   <Repository>gbendy/sonarrtorss</Repository>
   <Registry>https://registry.hub.docker.com/r/gbendy/sonarrtorss/</Registry>
-  <Network>swag</Network>
+  <Network></Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
@@ -17,12 +17,12 @@
   <ExtraParams/>
   <PostArgs/>
   <CPUset/>
-  <DateInstalled>1711186649</DateInstalled>
+  <DateInstalled></DateInstalled>
   <DonateText/>
   <DonateLink/>
   <Requires/>
-  <Config Name="WebUI" Target="18989" Default="18989" Mode="tcp" Description="The port for the Sonarr to RSS webinterface" Type="Port" Display="always" Required="false" Mask="false">18989</Config>
-  <Config Name="Appdata" Target="/data" Default="/mnt/user/appdata/sonarrtorss" Mode="rw" Description="Database and sonarr to rss configs" Type="Path" Display="always" Required="false" Mask="false">/mnt/user/appdata/sonarrtorss</Config>
+  <Config Name="WebUI" Target="18989" Default="18989" Mode="tcp" Description="The port for the Sonarr to RSS webinterface" Type="Port" Display="always" Required="true" Mask="false">18989</Config>
+  <Config Name="Appdata" Target="/data" Default="/mnt/user/appdata/sonarrtorss" Mode="rw" Description="Database and sonarr to rss configs" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/sonarrtorss</Config>
   <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="" Type="Variable" Display="always" Required="false" Mask="false">99</Config>
   <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="" Type="Variable" Display="always" Required="false" Mask="false">100</Config>
 </Container>
