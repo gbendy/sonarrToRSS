@@ -15,6 +15,7 @@ export async function init(state: State) {
       link: state.config.applicationUrl,
       language: 'en',
       copyright: '',
+      image: state.resolveApplicationUrl('/favicon.ico'),
       favicon: state.resolveApplicationUrl('/favicon.ico'),
       feedLinks: {
         rss: state.resolveApplicationUrl('rss')
