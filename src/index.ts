@@ -2,6 +2,7 @@ import { forCategory } from './logger';
 import { Config } from './types';
 import { State } from './state';
 import { start } from './express';
+import version from './version';
 
 const logger = forCategory('startup');
 
@@ -29,7 +30,7 @@ const defaultConfig: Config = {
   configured: false
 };
 
-logger.info('Starting Sonarr to RSS server');
+logger.info(`Starting Sonarr to RSS server version ${version}`);
 
 State.create(defaultConfig).then(start).catch(e => {
   logger.error(e);

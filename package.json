@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
+    "postbuild": "sed -s -i -e s/verMaj\\.verMin\\.verPatch/${npm_package_version}/ dist/version.js",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "lint": "eslint src",

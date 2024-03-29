@@ -6,6 +6,7 @@ import path from 'node:path';
 import { mkdir, readFile } from 'node:fs/promises';
 import { Request } from 'express';
 import { forCategory } from './logger';
+import version from './version';
 
 const logger = forCategory('state');
 
@@ -57,6 +58,10 @@ export class State {
     this.resolvedSessionDirectory = path.join(this.dataDirectory, this.config.sessionDirectory);
 
     this.regeneratePingId();
+  }
+
+  get version() {
+    return version;
   }
 
   async updateFromConfig() {
@@ -288,6 +293,7 @@ export class State {
     options.config = this.config;
     options.hostConfig = this.hostConfig;
     options.authenticated = req.isAuthenticated?.();
+    options.version = version;
     return options;
   }
 
