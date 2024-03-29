@@ -10,6 +10,7 @@
     "dev": "nodemon src/index.ts",
     "lint": "eslint src",
     "mk-favicon": "convert -background transparent -define 'icon:auto-resize=16,24,32,48,64' logos/sonarrToRSS.svg src/favicon.ico",
+    "mk-images": "convert -background none logos/sonarrToRSS.svg -geometry 192x192 -depth 8 img/sonarrToRSS.png",
     "predocker-build": "npm run build",
     "docker-build": "docker build -t gbendy/sonarrtorss -t gbendy/sonarrtorss:${npm_package_version} .",
     "predocker-publish": "npm run docker-build",
