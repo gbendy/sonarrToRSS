@@ -10,14 +10,21 @@ window.onload = () => {
   document.getElementById('password').addEventListener('keyup', submitOnEnter);
 }
 
+{{> utils.js }}
+
 async function login() {
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
+  const username = elementGetString(document.getElementById('username'));
+  const password = elementGetString(document.getElementById('password'));
   const errorMessageEntryElement = document.getElementById('errorMessageEntry');
   const errorMessageElement = document.getElementById('errorMessage');
+  const loginButtonElement = document.getElementById('login');
 
   errorMessageEntryElement.classList.add('collapse');
   errorMessageElement.classList.remove('error');
+  loginButtonElement.disabled = true;
+
+  const progress = startProgress(loginButtonElement, 'Login');
+
   try {
     if (username === '') {
       throw 'Enter username';
@@ -37,8 +44,8 @@ async function login() {
         })
       }
     );
-    if (res.ok) {
-      const json = await res.json();
+    if (res.ok || res.status === 401) {
+      const json = await res.json().catch(e => { throw 'Unknown login error' });
       if (json.result === 'OK') {
         window.location = json.redirectTo ?? '{{localUrl '/'}}'
       } else {
@@ -51,5 +58,8 @@ async function login() {
     errorMessageElement.textContent = e;
     errorMessageEntryElement.classList.remove('collapse');
     errorMessageElement.classList.add('error');
+  } finally {
+    loginButtonElement.disabled = false;
+    progress.stop('Login');
   }
 }

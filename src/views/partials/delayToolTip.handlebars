@@ -1,1 +1,3 @@
-onmouseenter="this.waitToShowTimer = setTimeout(() => { this.waitToShowTimer = undefined; this.classList.add('tooltiplinkshow') }, 1000);" onmouseleave="if (this.waitToShowTimer !== undefined) { clearTimeout(this.waitToShowTimer); this.waitToShowTimer = undefined }; this.classList.remove('tooltiplinkshow')"
+onmouseenter="this.waitToShowTimer = setTimeout(() => { this.waitToShowTimer = undefined; this.classList.add('tooltiplinkshow') }, 1000);"
+onmouseleave="if (this.waitToShowTimer !== undefined) { clearTimeout(this.waitToShowTimer); this.waitToShowTimer = undefined }; this.classList.remove('tooltiplinkshow')"
+onmousedown ="if (this.waitToShowTimer !== undefined) { clearTimeout(this.waitToShowTimer); this.waitToShowTimer = undefined }; this.classList.remove('tooltiplinkshow')"

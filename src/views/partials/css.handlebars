@@ -103,11 +103,11 @@ header user a {
   height: 1.2em;
 }
 
-a.tooltiplink {
+.tooltiplink {
   position: relative;
 }
 
-a.tooltiplinkshow::after {
+.tooltiplinkshow::after {
   content: attr(data-title);
   background-color: {{defaultColorInvert 'overlay-border-color' forFeed}};
   color: {{defaultColor 'color' forFeed}};
@@ -125,6 +125,12 @@ a.tooltiplinkshow::after {
 
   white-space: nowrap;
   z-index: 1;
+}
+
+entrytip.tooltiplinkshow::after {
+  font-size: 1em;
+  top: -1.5em;
+  left: 166px;
 }
 
 events {
@@ -456,7 +462,7 @@ img {
     border: 2px solid var(--light-overlay-border-color);
   }
 
-  a.tooltiplink:hover::after {
+  .tooltiplink:hover::after {
     background-color: var(--dark-overlay-border-color);
     color: var(--light-color);
   }
@@ -524,7 +530,7 @@ img {
     border: 2px solid var(--light-overlay-border-color);
   }
 
- a.tooltiplink:hover::after {
+ .tooltiplink:hover::after {
     background-color: var(--light-overlay-border-color);
     color: var(--dark-color);
   }

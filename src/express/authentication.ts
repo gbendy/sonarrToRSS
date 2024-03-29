@@ -92,48 +92,23 @@ function jsonError(res: Response, error: unknown) {
 export function localLogin(state: State) {
   return [
     json(),
-    (req: Request, res: Response, next: NextFunction) => {
-      passport.authenticate(state.passportStrategies.local, (
-        err: unknown,
-        user?: Express.User | false | null,
-        info?: { message?: string }) => {
-        if (err) {
-          return jsonError(res, err);
-        }
-        if (!user) {
-          return jsonError(res, info?.message ?? 'Login failed');
-        }
-        req.user = user;
-        const prevSession: typeof req.session & { returnTo?: string } = req.session;
-        req.session.regenerate((err) => {
-          if (err) {
-            return jsonError(res, err);
-          }
-          passport.serializeUser(user, req, (err, obj) => {
-            if (err) {
-              return jsonError(res, err);
-            }
-            const url = prevSession.returnTo ?? '/';
-            const session = req.session as unknown as Record<string,any>; //eslint-disable-line @typescript-eslint/no-explicit-any
-            if (!session.passport) {
-              session.passport = {};
-            }
-            // store user information in session, typically a user id
-            session.passport.user = obj;
-            // save the session before redirection to ensure page
-            // load does not happen before session is saved
-            req.session.save(function(err) {
-              if (err) {
-                return jsonError(res, err);
-              }
-              return res.json({
-                result: 'OK',
-                redirectTo: state.resolveUrlPath(url)
-              });
-            });
-          });
+    passport.authenticate(state.passportStrategies.local, { failureMessage: true, failWithError: true, keepSessionInfo: true }),
+    (req: Request, res: Response) => {
+      const session: typeof req.session & { returnTo?: string, messages?: Array<string> } = req.session;
+      if (req.user) {
+        const url = session?.returnTo ?? '/'
+        delete session?.returnTo;
+        res.json({
+          result: 'OK',
+          redirectTo: state.resolveUrlPath(url)
         });
-      })(req, res, next);
+      }
+    },
+    (err: Error, req: Request, res: Response, next: NextFunction) => {
+      const session: typeof req.session & { returnTo?: string, messages?: Array<string> } = req.session;
+      const message = session.messages?.[0] ?? 'Login failed';
+      delete session?.messages;
+      return jsonError(res, message);
     }
   ];
 }

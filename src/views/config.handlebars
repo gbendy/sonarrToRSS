@@ -10,14 +10,20 @@
           <detail>
             <episode class="noseries">Host</episode>
             <release>
-              <entry><span class="label">Port Number</span><input id="port" value="{{config.port}}" type="number" min="1" max="65535"></entry>
-              <entry class="tip"><span id="portMessage">* Port number this server listens on</span></entry>
-              <entry><span class="label">Listen Address</span><input id="address" value="{{config.address}}"></entry>
-              <entry class="tip"><span id="addressMessage">* Address this server listens on</span></entry>
+              <entrytip class="tooltiplink" {{> delayToolTip }} data-title="If running in Docker you probably don't want to change this.">
+                <entry><span class="label">Port Number</span><input id="port" value="{{config.port}}" type="number" min="1" max="65535"></entry>
+                <entry class="tip"><span id="portMessage">* Port number this server listens on</span></entry>
+              </entrytip>
+              <entrytip class="tooltiplink" {{> delayToolTip }} data-title="If running in Docker you probably don't want to change this.">
+                <entry><span class="label">Listen Address</span><input id="address" value="{{config.address}}"></entry>
+                <entry class="tip"><span id="addressMessage">* Address this server listens on</span></entry>
+              </entrytip>
               <entry><span class="label">Application URL</span><input id="applicationUrl" value="{{config.applicationUrl}}"></entry>
               <entry class="tip"><span id="applicationUrlMessage">* Public URL to access this server. This is used for links in the feed{{#unless config.configured}}<br><i>The above is a default. Verify and change if necessary</i>{{/unless}}</span></entry>
-              <entry><span class="label">Webhook URL</span><span class="static" id="sonarrWebhookMessage">{{applicationUrl urls.sonarr}}</span></entry>
-              <entry class="tip"><span>Configure Sonarr Webhook URL to the above</span></entry>
+              <entrytip class="tooltiplink" {{> delayToolTip }} data-title="Or the URL that your Sonarr see this server as. Final part of the path must be /sonarr">
+                <entry><span class="label">Webhook URL</span><span class="static" id="sonarrWebhookMessage">{{applicationUrl urls.sonarr}}</span></entry>
+                <entry class="tip"><span>Configure Sonarr Webhook URL to the above</span></entry>
+              </entrytip>
               <entry><span class="label">URL Base</span><input id="urlBase" value="{{config.urlBase}}"></entry>
               <entry class="tip"><span id="urlBaseMessage">If behind a path based reverse proxy the path to prefix to local URLs</span></entry>
             </release>
@@ -46,10 +52,14 @@
           <detail>
             <episode class="noseries">Sonarr</episode>
             <release>
-              <entry><span class="label">Sonarr Base URL</span><input id ="sonarrBaseUrl" value="{{config.sonarrBaseUrl}}"></entry>
-              <entry class="tip"><span id="sonarrBaseUrlMessage">URL to the Sonarr application we are processing web hooks for</span></entry>
-              <entry><span class="label">Insecure</span><input id="sonarrInsecure" {{ifEqual config.sonarrInsecure true 'checked' ''}} type="checkbox"></entry>
-              <entry class="tip"><span id="sonarrInsecureMessage">Allow insecure connections to Sonarr</span></entry>
+              <entrytip class="tooltiplink" {{> delayToolTip }} data-title="The URL you connect to Sonarr with in a web browser. Only required if you want to have series banners shown in events.">
+                <entry><span class="label">Sonarr Base URL</span><input id ="sonarrBaseUrl" value="{{config.sonarrBaseUrl}}"></entry>
+                <entry class="tip"><span id="sonarrBaseUrlMessage">URL to the Sonarr application we are processing web hooks for</span></entry>
+              </entrytip>
+              <entrytip class="tooltiplink" {{> delayToolTip }} data-title="Select if you connect to Sonarr via https and use self signed certificates.">
+                <entry><span class="label">Insecure</span><input id="sonarrInsecure" {{ifEqual config.sonarrInsecure true 'checked' ''}} type="checkbox"></entry>
+                <entry class="tip"><span id="sonarrInsecureMessage">Allow insecure connections to Sonarr</span></entry>
+              </entrytip>
               <entry><span class="label">API Key</span><input id="sonarrApiKey" value="{{config.sonarrApiKey}}"></entry>
               <entry class="tip"><span id="sonarrApiKeyMessage">API key for the Sonarr application we are processing web hooks for</span></entry>
               <entry><button id="testSonarr" type="button" onclick="testSonarr()">Test</button></entry>

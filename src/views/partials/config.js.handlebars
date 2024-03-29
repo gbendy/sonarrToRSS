@@ -1,6 +1,8 @@
 
 const isConfigured = {{config.configured}};
 
+{{> utils.js }}
+
 function updateApplicationUrlUrls(event) {
   const applicationUrlElement = document.getElementById('applicationUrl');
 
@@ -36,107 +38,8 @@ window.onload = () => {
   }
 };
 
-function startProgress(element, prefix, animation = ['⠁','⠂','⠄','⡀','⢀','⠠','⠐','⠈'], interval = 500) {
-  let count = 1;
-  const animationLength = animation.length;
-  element.textContent = `${prefix} ${animation[0]}`;
-  return setInterval(() => {
-    element.textContent = `${prefix} ${animation[count % animationLength]}`;
-    count++;
-  }, interval);
-}
-
-function isUrl(value) {
-  try {
-    return new URL(value);
-  } catch {
-    return false;
-  }
-}
-
 function elementValid() {
   return true;
-}
-
-function isString(value) {
-  return value?.constructor === String;
-}
-
-function elementIsString(element) {
-  return isString(element?.value);
-}
-
-function elementIsNonEmptyString(element) {
-  return elementIsString(element) && element.value !== '';
-}
-
-function elementIsInteger(element) {
-  return elementIsString(element) && /^[+-]?[0-9]+$/.test(element.value) && !Number.isNaN(Number.parseInt(element.value, 10));
-}
-
-function elementIsFloat(element) {
-  return elementIsString(element) && /^[+-]?[0-9]+(\.[0-9]*)?$/.test(element.value) && !Number.isNaN(Number.parseFloat(element.value));
-}
-
-function elementIsInRange(min, max, element) {
-  if (elementIsInteger(element)) {
-    const value = elementGetInteger(element);
-    if (value >= min && value <= max) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function elementIsGTE(min, element) {
-  if (elementIsInteger(element)) {
-    const value = elementGetInteger(element);
-    if (value >= min) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function elementIsFloatGTE(min, element) {
-  if (elementIsFloat(element)) {
-    const value = elementGetFloat(element);
-    if (value >= min) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function elementIsBoolean(element) {
-  return element.checked === true || element.checked === false;
-}
-
-function elementIsUrl(element) {
-  return !!isUrl(element?.value);
-}
-
-function elementIsHttpUrl(element) {
-  const url = isUrl(element?.value);
-  return url ? (url.protocol === 'http:' || url.protocol === 'https:') : false;
-}
-
-function elementIsHttpUrlOrEmptyString(element) {
-  return elementIsHttpUrl(element) || (elementIsString(element) && element.value === '');
-}
-
-function elementIsOneOf(values, element) {
-  return values.some(value => value = element.value);
-}
-
-function elementHasSelection(element) {
-  const selected = element.selectedOptions;
-  return selected.length > 0;
-}
-
-function elementMatchesString(otherElementName, element) {
-  const otherElement = document.getElementById(otherElementName);
-  return elementIsString(otherElement) && elementIsString(element) && otherElement.value === element.value;
 }
 
 function validate(elementId, validationFunction, getFunction) {
@@ -149,31 +52,6 @@ function validate(elementId, validationFunction, getFunction) {
     return [ false ];
   }
   return [ true, getFunction(element) ];
-}
-
-function elementGetString(element) {
-  return element.value;
-}
-
-function elementGetInteger(element) {
-  return Number.parseInt(element.value, 10);
-}
-
-function elementGetFloat(element) {
-  return Number.parseFloat(element.value);
-}
-
-function elementGetBoolean(element) {
-  return element.checked
-}
-
-function elementGetSelections(element) {
-  const selected = element.selectedOptions;
-  const result = [];
-  for (let i=0; i < selected.length; ++i) {
-    result.push(selected.item(i).value);
-  };
-  return result;
 }
 
 function validateConfig() {
@@ -264,7 +142,6 @@ async function testSonarr() {
         })
       }
     );
-    clearInterval(progress);
     if (res.ok) {
       const json = await res.json();
       if (json.result === 'OK') {
@@ -281,18 +158,13 @@ async function testSonarr() {
       throw `Sonarr API test returned unexpected response: ${res.status} ${res.statusText}`;
     }
   } catch(e) {
-    clearInterval(progress);
     responseElement.textContent = isString(e) ? e : 'Error testing Sonarr API.';
     responseElement.classList.add('error');
     responseElement.classList.remove('good');
   } finally {
     sonarrTestElement.disabled = false;
-    sonarrTestElement.textContent = 'Test';
+    progress.stop('Test');
   }
-}
-
-function appendPath(source, path) {
-  return (source.endsWith('/') ? source : (source + '/')) + path;
 }
 
 async function reloadAndRedirect(message, applicationUrl, redirectUrl, expectedPingId) {
@@ -343,7 +215,7 @@ async function saveConfig() {
       }
     );
 
-    clearInterval(progress);
+    progress.stop();
 
     if (res.ok) {
       const json = await res.json();
@@ -366,8 +238,7 @@ async function saveConfig() {
       throw `Save Failed`;
     }
   } catch(e) {
-    clearInterval(progress);
-    saveConfigElement.textContent = isString(e) ? e : 'Error saving configuration';
+    progress.stop(isString(e) ? e : 'Error saving configuration');
     setTimeout(() => {
       saveConfigElement.textContent = isConfigured ? 'Save' : 'Continue';
     }, 3000);
