@@ -43,13 +43,14 @@ Webhook Connection to send events to `http://localhost:18989/sonarr`. RSS feed i
 - Simple and convenient file based persistence, no external services required.
 - Minimal configuration. Set a username and password on initial load and you're good to go. All
   configuration changes can be applied in situ. No restarts!
-- Context aware event rendering provides event specific metadata. Add connection information for
+- Content aware event rendering provides rich event specific data. Add connection information for
   your Sonarr installation to add series banner images in events.
 - Light and dark themes.
 - Supports domain and subfolder based reverse proxies.
   [SWAG](https://docs.linuxserver.io/general/swag "SWAG") configurations are available
   [here](https://github.com/gbendy/sonarrToRSS/tree/main/swag "Swag configuration files").
-- Configurable cooldown for Health events to suppress transient issues from the feed.
+- Configurable cooldown for Health events to suppress transient issues from the feed, or purge them
+  from history entirely.
 
 ## I've forgotten my password!
 
