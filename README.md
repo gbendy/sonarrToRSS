@@ -14,7 +14,7 @@ Sonarr to RSS can be conveniently installed via [Docker](https://hub.docker.com/
 
 Sonarr to RSS is not (yet) an [Unraid](https://unraid.net "Unraid") App however a Docker template is
 available from
-[here](https://raw.githubusercontent.com/gbendy/sonarrToRSS/main/templates/unraid/sonarrtorss.xml
+[here](https://raw.githubusercontent.com/gbendy/unraid-templates/main/sonarrtorss/sonarrtorss.xml
 "Unraid docker template"). Download this file to your user template directory as
 `/boot/config/plugins/dockerMan/templates-user/my-sonarrtorss.xml`, then select `Add Container` from
 your Unraid Docker tab. A `sonarrtorss` template will be available to setup your container.
