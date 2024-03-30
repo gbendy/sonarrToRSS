@@ -21,7 +21,8 @@ export interface UserConfig extends SonarrApiConfig {
   feedHealthDelayTypes: Array<string>,
   feedRss: boolean,
   feedAtom: boolean,
-  feedJson: boolean
+  feedJson: boolean,
+  discardResolvedHealthEvents: boolean
 }
 
 export interface Config extends UserConfig {

@@ -72,6 +72,7 @@ function validateConfig() {
   const [ feedAtomValid, feedAtom ] = validate('feedAtom', elementIsBoolean, elementGetBoolean);
   const [ feedJsonValid, feedJson ] = validate('feedJson', elementIsBoolean, elementGetBoolean);
   const [ feedHealthDelayValid, feedHealthDelay ] = validate('feedHealthDelay', elementIsGTE.bind(null, 0), elementGetInteger);
+  const [ discardResolvedHealthEventsValid, discardResolvedHealthEvents ] = validate('discardResolvedHealthEvents', elementIsBoolean, elementGetBoolean);
   const [ feedHealthDelayTypesValid, feedHealthDelayTypes ] = validate('feedHealthDelayTypes', feedHealthDelay > 0 ? elementHasSelection : elementValid, elementGetSelections);
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
@@ -79,7 +80,7 @@ function validateConfig() {
     !sonarrApiKeyValid || !sonarrApiKeyValid ||
     !feedTitleValid || !feedThemeValid ||
     !feedRssValid || !feedAtomValid || !feedJsonValid ||
-    !feedHealthDelayValid || !feedHealthDelayTypesValid) {
+    !feedHealthDelayValid || !discardResolvedHealthEventsValid || !feedHealthDelayTypesValid) {
     throw 'Invalid Configuration';
   }
   return {
@@ -99,6 +100,7 @@ function validateConfig() {
     feedAtom,
     feedJson,
     feedHealthDelay,
+    discardResolvedHealthEvents,
     feedHealthDelayTypes
   }
 }

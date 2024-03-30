@@ -73,6 +73,17 @@ function isHttpUrlOrEmptyString(value: unknown): value is string {
   return isHttpUrl(value) || (isString(value) && value === '');
 }
 
+/**
+ * Parses the given string and returns it as an Integer.
+ * Defaults to defaultvalue if parsing fails
+ */
+export function parseInteger<T>(str: string, defaultValue: T): number | T
+{
+  const value = Number.parseInt(str);
+  return Number.isNaN(value) ? defaultValue : value;
+}
+
+
 export function validateSonarrApiConfig(config: SonarrApiConfig, strict: boolean) {
   return (strict ? isHttpUrl(config?.sonarrBaseUrl) : isHttpUrlOrEmptyString(config?.sonarrBaseUrl)) && isString(config?.sonarrApiKey) && isBoolean(config?.sonarrInsecure);
 }
@@ -86,7 +97,7 @@ export function validateUserConfig(config: Config) {
     isString(config?.feedTitle) &&
     (config?.feedTheme === 'auto' || config?.feedTheme === 'light' || config?.feedTheme === 'dark') &&
     isBoolean(config?.feedRss) && isBoolean(config?.feedAtom) && isBoolean(config?.feedJson) &&
-    isNumber(config?.feedHealthDelay) && isArray(config?.feedHealthDelayTypes);
+    isNumber(config?.feedHealthDelay) && isBoolean(config?.discardResolvedHealthEvents) && isArray(config?.feedHealthDelayTypes);
 }
 
 export function validateConfig(config: Config) {

@@ -150,6 +150,10 @@ export default function (state: State) {
         newConfig.feedHealthDelay = postedConfig.feedHealthDelay;
         regenerateFeed = true;
       }
+      if (newConfig.discardResolvedHealthEvents !== postedConfig.discardResolvedHealthEvents) {
+        newConfig.discardResolvedHealthEvents = postedConfig.discardResolvedHealthEvents;
+        regenerateFeed = true;
+      }
       if (!arraysEqual(newConfig.feedHealthDelayTypes, postedConfig.feedHealthDelayTypes)) {
         newConfig.feedHealthDelayTypes = postedConfig.feedHealthDelayTypes;
         regenerateFeed = true;

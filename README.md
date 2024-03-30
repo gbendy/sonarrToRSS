@@ -22,7 +22,7 @@ Configure as required then hit `Apply` to install the container.
 
 ### From Source
 
-Sonarr to RSS required Node.js 20 or later and can be run directly from a repository clone.
+Sonarr to RSS requires Node.js 20 or later and can be run directly from a repository clone.
 
 ```
 git clone https://github.com/gbendy/sonarrToRSS.git
@@ -46,7 +46,8 @@ Webhook Connection to send events to `http://localhost:18989/sonarr`. RSS feed i
 - Context aware event rendering provides event specific metadata. Add connection information for
   your Sonarr installation to add series banner images in events.
 - Light and dark themes.
-- Supports domain and subfolder based reverse proxies. Swag configurations are available
+- Supports domain and subfolder based reverse proxies.
+  [SWAG](https://docs.linuxserver.io/general/swag "SWAG") configurations are available
   [here](https://github.com/gbendy/sonarrToRSS/tree/main/swag "Swag configuration files").
 - Configurable cooldown for Health events to suppress transient issues from the feed.
 

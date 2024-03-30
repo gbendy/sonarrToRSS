@@ -26,6 +26,7 @@ const defaultConfig: Config = {
   feedRss: true,
   feedAtom: true,
   feedJson: false,
+  discardResolvedHealthEvents: false,
   sessionSecrets: [],
   configured: false
 };

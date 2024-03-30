@@ -2,16 +2,7 @@ import  { Router, Request, Response } from 'express';
 import { ImageCache, SeriesResourceExt } from '../../types';
 import { State } from '../../state';
 import { authenticated } from '../authentication';
-
-/**
- * Parses the given string and returns it as an Integer.
- * Defaults to defaultvalue if parsing fails
- */
-function parseInteger<T>(str: string, defaultValue: T): number | T
-{
-  const value = Number.parseInt(str);
-  return Number.isNaN(value) ? defaultValue : value;
-}
+import { parseInteger } from '../../utils';
 
 function sendBuffer(buffer: Buffer, contentType: string|undefined, res: Response) {
   res.statusCode = 200;

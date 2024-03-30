@@ -33,7 +33,7 @@ export async function init(state: State) {
     if (seriesId !== undefined && !state.seriesData.has(seriesId)) {
       seriesIds.add(seriesId);
     }
-    promises.push(state.feed.eventManager.addEvent(event));
+    promises.push(state.feed.eventManager.addEventToFeed(event));
   });
   promises.push(state.ensureSeries(seriesIds));
   return Promise.all(promises);

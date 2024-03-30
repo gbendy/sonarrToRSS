@@ -92,6 +92,8 @@
                 Setting this to a positive integer will prevent health events from being sent to the feed if they resolve within the given number of minutes.
               </span></entry>
               <div id="feedHealthDelayTypesWrapper" class="{{ifEqual config.feedHealthDelay 0 "collapse" ''}}">
+                <entry><span class="label">Discard Healthy</span><input id="discardResolvedHealthEvents" {{ifEqual config.discardResolvedHealthEvents true 'checked' ''}} type="checkbox"></entry>
+                <entry class="tip"><span id="discardResolvedHealthEventsMessage"></span>Health events that resolve within the given time are also purged from history.</entry>
                 <entry><span class="label">Health Delay Types</span>
                   <select id="feedHealthDelayTypes" multiple size="10">
                     {{#each healthTypes}}

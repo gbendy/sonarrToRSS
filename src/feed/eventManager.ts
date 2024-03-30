@@ -3,11 +3,15 @@ import { Event } from '../types';
 import { create } from 'express-handlebars';
 import { forCategory } from '../logger';
 import { State } from '../state';
+import { WebHookPayload } from '../sonarrApiV3';
+import { randomString } from '../utils';
+import { writeFileSync } from 'node:fs';
 
 const logger = forCategory('feed');
 
 type HealthTimer = {
-  timer: ReturnType<typeof setTimeout>;
+  event: Event;
+  timer?: ReturnType<typeof setTimeout>;
   startTime: number;
 };
 
@@ -51,6 +55,7 @@ export class EventManager {
   #delayedHealthEvents: Map<string, HealthTimer>;
   #typesToDelay: Set<string>;
   #handlebars: ReturnType<typeof create>;
+  installDelayTimeouts = true;
 
   constructor(state: State) {
     this.#state = state;
@@ -92,13 +97,16 @@ export class EventManager {
 
     }
     this.#delayedHealthEvents.set(id, {
+      event,
       startTime: event.timestamp,
-      timer: setTimeout(async () => {
-        // delay timed out
-        logger.info(`Health event '${id}' did not receive restore event within ${this.#state.config.feedHealthDelay} minutes so sending to feed`);
-        this.#delayedHealthEvents.delete(id);
-        this.addEvent(event);
-      }, fromMinutes(this.#state.config.feedHealthDelay) - (Date.now() - event.timestamp))
+      timer: this.installDelayTimeouts ?
+        setTimeout(async () => {
+          // delay timed out
+          logger.info(`Health event '${id}' did not receive restore event within ${this.#state.config.feedHealthDelay} minutes so sending to feed`);
+          this.#delayedHealthEvents.delete(id);
+          this.addEventToFeed(event);
+        }, fromMinutes(this.#state.config.feedHealthDelay) - (Date.now() - event.timestamp)) :
+        undefined
     });
   }
 
@@ -119,6 +127,34 @@ export class EventManager {
     };
   }
 
+  async addEvent(payload: WebHookPayload) {
+    const timestamp = Date.now();
+    const id = randomString();
+    const event: Event = {
+      timestamp,
+      id,
+      index: this.#state.history.length,
+      event: payload
+    };
+    this.#state.history.push(event);
+    this.#state.events[event.id] = event;
+
+    if (event.event.series?.id !== undefined && !this.#state.seriesData.has(event.event.series.id)) {
+      this.#state.ensureSeries(new Set([ event.event.series?.id ]));
+    }
+    try {
+      await this.processNew(event);
+    } catch (e) {
+      logger.info(`Error sending event to feed: ${e}`);
+    }
+
+    this.#writeHistoryFile();
+  }
+
+  #writeHistoryFile() {
+    writeFileSync(this.#state.resolvedHistoryFile, JSON.stringify(this.#state.history), { encoding: 'utf8' });
+  }
+
   /**
    * Processes a newly received event. If a delayed health event this will manage
    * delaying the push otherwise immediately adds the event to the feeds
@@ -127,7 +163,7 @@ export class EventManager {
   async processNew(event: Event) {
     if (this.#state.config.feedHealthDelay <= 0) {
       // delay disabled
-      return this.addEvent(event);
+      return this.addEventToFeed(event);
     }
 
     if (this.#isHealthEvent(event)) {
@@ -136,22 +172,49 @@ export class EventManager {
       return;
     } else if (this.#isHealthRestoredEvent(event)) {
       const id = healthId(event);
-      const healthEventTimer = this.#delayedHealthEvents.get(id);
+      let healthEventTimer = this.#delayedHealthEvents.get(id);
+      if (!this.installDelayTimeouts && healthEventTimer) {
+        const restoreTime = (event.timestamp - healthEventTimer.event.timestamp);
+        if (this.#expired(restoreTime)) {
+          // restore time was longer than delay time. So we want to keep the events.
+          this.#delayedHealthEvents.delete(id);
+          healthEventTimer = undefined;
+        }
+      }
       if (healthEventTimer !== undefined) {
         // There's a matching health event so is within the
         // timeout period so don't send the restored event.
         // Clear and remove the timer so that the health event doesn't get
         // sent either.
         const time = Math.ceil(toMinutes(event.timestamp - healthEventTimer.startTime));
-        logger.info(`Health event '${id}' restored after ${time} minutes`);
 
         clearTimeout(healthEventTimer.timer);
         this.#delayedHealthEvents.delete(id);
 
+        if (this.#state.config.discardResolvedHealthEvents) {
+          // remove both this event and the original one from history.
+
+          // event.index will be greater than the original health event so remove
+          // the restore event first.
+          this.#state.history.splice(event.index, 1);
+          this.#state.history.splice(healthEventTimer.event.index, 1);
+
+          // update indices of all events after the original one.
+          for (let idx=healthEventTimer.event.index; idx < this.#state.history.length; ++idx) {
+            this.#state.history[idx].index = idx;
+          }
+
+          delete this.#state.events[event.id];
+          delete this.#state.events[healthEventTimer.event.id];
+          logger.info(`Health event '${id}' restored after ${time} minutes. Purging from history.`);
+        } else {
+          logger.info(`Health event '${id}' restored after ${time} minutes. Suppressing from feed.`);
+        }
+
         return;
       }
     }
-    return this.addEvent(event);
+    return this.addEventToFeed(event);
   }
 
   /**
@@ -204,7 +267,7 @@ export class EventManager {
    * Immediately adds an event to the feed
    * @param event
    */
-  async addEvent(event: Event) {
+  async addEventToFeed(event: Event) {
     this.#state.feed.feed.addItem(await this.#createFeedItem(event));
   }
 }
