@@ -3,6 +3,15 @@
 Sonarr To RSS is a [Sonarr](https://sonarr.tv/ "Sonarr") Webhook connection endpoint that streams
 events to RSS/Atom/JSON feeds and provides a paginated website to browse historical events.
 
+#### Light mode
+[![Light mode](img/lightMode.png)](https://raw.githubusercontent.com/gbendy/sonarrToRSS/main/img/lightMode.png)
+
+#### Dark mode
+[![Dark mode](img/darkMode.png)](https://raw.githubusercontent.com/gbendy/sonarrToRSS/main/img/darkMode.png)
+
+#### RSS feed
+[![RSS feed](img/feed.png)](https://raw.githubusercontent.com/gbendy/sonarrToRSS/main/img/feed.png)
+
 ## Getting Started
 
 ### Docker
@@ -65,8 +74,11 @@ force you to set a new password.
 ### Development
 
 This project exists thanks to all the people who
-[contribute](https://github.com/gbendy/sonarrToRSS/graphs/contributors "Contributers"). To help out
-fork the repository, make same changes and submit a PR.
+[contribute](https://github.com/gbendy/sonarrToRSS/graphs/contributors "Contributers").
+
+- [Brendan Hack](https://github.com/gbendy "Brendan Hack")
+
+To help out fork the repository, make same changes and submit a PR.
 
 ### Licenses
 
