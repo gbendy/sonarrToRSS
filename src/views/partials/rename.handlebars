@@ -1,0 +1,6 @@
+<episode {{#unless (showBanner event)}}class="noseries"{{/unless}}>Renamed {{event.renamedEpisodeFiles.length}} Episode{{ifEqual event.renamedEpisodeFiles.length 1 '' 's'}}</episode>
+<release>
+{{#each event.renamedEpisodeFiles}}
+  <entry><span class="label">{{this.this.relativePath}}</span></entry>
+{{/each}}
+</release>

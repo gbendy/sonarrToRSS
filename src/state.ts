@@ -17,6 +17,7 @@ const eventTypePartials = {
   Grab: 'grab',
   Health: 'health',
   HealthRestored: 'healthRestored',
+  Rename: 'rename',
   SeriesAdd: 'seriesAdd',
   SeriesDelete: 'seriesDelete',
   Test: 'test'
