@@ -268,6 +268,9 @@ export class EventManager {
    * @param event
    */
   async addEventToFeed(event: Event) {
+    if (event.event.series?.id !== undefined && !this.#state.seriesData.has(event.event.series.id)) {
+      await this.#state.ensureSeries(new Set([ event.event.series?.id ]));
+    }
     this.#state.feed.feed.addItem(await this.#createFeedItem(event));
   }
 }

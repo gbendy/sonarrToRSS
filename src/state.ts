@@ -36,6 +36,7 @@ export class State {
   history!: History;
   events!: Events;
   seriesData: Map<number, SeriesResourceExt> = new Map<number, SeriesResourceExt>;
+  queuedSeriesData: Map<number, Promise<void>> = new Map<number, Promise<void>>;
   feed!: RSSFeed;
   server!: Server;
   passportStrategies: { local: string, basic: string };
@@ -146,6 +147,11 @@ export class State {
     return this;
   }
 
+  /**
+   * Makes sure that we have series data for the given series ids
+   * @param seriesIds
+   * @returns
+   */
   async ensureSeries(seriesIds: Set<number>) {
     await this.ensureSonarrApi();
     if (!this.sonarrApi) {
@@ -154,10 +160,17 @@ export class State {
     if (seriesIds.size) {
       const promises = [];
       for (const seriesId of seriesIds) {
-        promises.push(this.sonarrApi.getJson<SeriesResourceExt>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
-          data.cachedImages = new Map<string, ImageCache>;
-          this.seriesData.set(seriesId, data);
-        }));
+        if (this.seriesData.has(seriesId)) {
+          continue;
+        }
+        if (!this.queuedSeriesData.has(seriesId)) {
+          this.queuedSeriesData.set(seriesId, this.sonarrApi.getJson<SeriesResourceExt>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
+            data.cachedImages = new Map<string, ImageCache>;
+            this.seriesData.set(seriesId, data);
+            this.queuedSeriesData.delete(seriesId);
+          }));
+        }
+        promises.push(this.queuedSeriesData.get(seriesId));
       }
 
       return Promise.all(promises).catch((e) => {
