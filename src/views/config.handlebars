@@ -12,20 +12,20 @@
             <release>
               <entrytip class="tooltiplink" {{> delayToolTip }} data-title="If running in Docker you probably don't want to change this.">
                 <entry><span class="label">Port Number</span><input id="port" value="{{config.port}}" type="number" min="1" max="65535"></entry>
-                <entry class="tip"><span id="portMessage">* Port number this server listens on</span></entry>
+                <entry class="tip"><span id="portMessage">* Port number this server listens on.</span></entry>
               </entrytip>
               <entrytip class="tooltiplink" {{> delayToolTip }} data-title="If running in Docker you probably don't want to change this.">
                 <entry><span class="label">Listen Address</span><input id="address" value="{{config.address}}"></entry>
-                <entry class="tip"><span id="addressMessage">* Address this server listens on</span></entry>
+                <entry class="tip"><span id="addressMessage">* Address this server listens on.</span></entry>
               </entrytip>
               <entry><span class="label">Application URL</span><input id="applicationUrl" value="{{config.applicationUrl}}"></entry>
-              <entry class="tip"><span id="applicationUrlMessage">* Public URL to access this server. This is used for links in the feed{{#unless config.configured}}<br><i>The above is a default. Verify and change if necessary</i>{{/unless}}</span></entry>
+              <entry class="tip"><span id="applicationUrlMessage">* Public URL to access this server. This is used for links in the feed.{{#unless config.configured}}<br><i>The above is a default. Verify and change if necessary.</i>{{/unless}}</span></entry>
               <entrytip class="tooltiplink" {{> delayToolTip }} data-title="Or the URL that your Sonarr see this server as. Final part of the path must be /sonarr">
                 <entry><span class="label">Webhook URL</span><span class="static" id="sonarrWebhookMessage">{{applicationUrl urls.sonarr}}</span></entry>
-                <entry class="tip"><span>Configure Sonarr Webhook URL to the above</span></entry>
+                <entry class="tip"><span>Configure Sonarr Webhook URL to the above.</span></entry>
               </entrytip>
               <entry><span class="label">URL Base</span><input id="urlBase" value="{{config.urlBase}}"></entry>
-              <entry class="tip"><span id="urlBaseMessage">If behind a path based reverse proxy the path to prefix to local URLs</span></entry>
+              <entry class="tip"><span id="urlBaseMessage">If behind a path based reverse proxy the path to prefix to local URLs.</span></entry>
             </release>
           </detail>
         </data>
@@ -36,13 +36,11 @@
             <episode class="noseries">User</episode>
             <release>
               <entry><span class="label">Username</span><input id="username" value="{{config.username}}" type="text"></entry>
-              <entry class="tip"><span id="usernameMessage">* Like Sonarr itself Sonarr to RSS requires authentication</span></entry>
+              <entry class="tip"><span id="usernameMessage">* Like Sonarr itself Sonarr to RSS requires authentication.</span></entry>
               <entry><span class="label">Password</span><input id="password" type="password" placeholder="{{ifEqual config.configured true 'Enter new password to change' 'Enter password'}}"></entry>
               <entry class="tip"><span id="passwordMessage">{{ifEqual config.configured true 'Password' '* Password'}}</span></entry>
-              <entry><span class="label">Confirm password</span><input id="confirmPassword" type="password"></entry>
-              <entry class="tip"><span id="confirmPasswordMessage">Confirm Password</span></entry>
-              <entry><span class="label">Session Expiry</span><input id="sessionExpire" value="{{config.sessionExpire}}" type="number" min="0"></entry>
-              <entry class="tip"><span id="sessionExpireMessage">Session expiry in days. Set to 0 to never expire sessions.</span></entry>
+              <entry><span class="label">Confirm password.</span><input id="confirmPassword" type="password"></entry>
+              <entry class="tip"><span id="confirmPasswordMessage">Confirm Password.</span></entry>
             </release>
           </detail>
         </data>
@@ -54,18 +52,16 @@
             <release>
               <entrytip class="tooltiplink" {{> delayToolTip }} data-title="The URL you connect to Sonarr with in a web browser. Only required if you want to have series banners shown in events.">
                 <entry><span class="label">Sonarr Base URL</span><input id ="sonarrBaseUrl" value="{{config.sonarrBaseUrl}}"></entry>
-                <entry class="tip"><span id="sonarrBaseUrlMessage">URL to the Sonarr application we are processing web hooks for</span></entry>
+                <entry class="tip"><span id="sonarrBaseUrlMessage">URL to the Sonarr application we are processing web hooks for.</span></entry>
               </entrytip>
               <entrytip class="tooltiplink" {{> delayToolTip }} data-title="Select if you connect to Sonarr via https and use self signed certificates.">
                 <entry><span class="label">Insecure</span><input id="sonarrInsecure" {{ifEqual config.sonarrInsecure true 'checked' ''}} type="checkbox"></entry>
-                <entry class="tip"><span id="sonarrInsecureMessage">Allow insecure connections to Sonarr</span></entry>
+                <entry class="tip"><span id="sonarrInsecureMessage">Allow insecure connections to Sonarr.</span></entry>
               </entrytip>
               <entry><span class="label">API Key</span><input id="sonarrApiKey" value="{{config.sonarrApiKey}}"></entry>
-              <entry class="tip"><span id="sonarrApiKeyMessage">API key for the Sonarr application we are processing web hooks for</span></entry>
+              <entry class="tip"><span id="sonarrApiKeyMessage">API key for the Sonarr application we are processing web hooks for.</span></entry>
               <entry><button id="testSonarr" type="button" onclick="testSonarr()">Test</button></entry>
-              <entry class="tip"><span id="testSonarrResult">{{#if hostConfig.instanceName}}Connected to {{hostConfig.instanceName}}{{else}}Sonarr not found{{/if}}</span></entry>
-              <entry><span class="label">Cache Size</span><input id="maxImageCacheSize" value="{{config.maxImageCacheSize}}"></entry>
-              <entry class="tip"><span id="maxImageCacheSizeMessage">MB of memory to use for series image caching. Set to 0 to disable caching</span></entry>
+              <entry class="tip"><span id="testSonarrResult">{{#if hostConfig.instanceName}}Connected to {{hostConfig.instanceName}}.{{else}}Sonarr not found.{{/if}}</span></entry>
             </release>
           </detail>
         </data>
@@ -103,8 +99,31 @@
                     {{/each}}
                   </select>
                 </entry>
-                <entry class="tip"><span id="feedHealthDelayTypesMessage">Select the types of health messages to delay</span></entry>
+                <entry class="tip"><span id="feedHealthDelayTypesMessage">Select the types of health messages to delay.</span></entry>
               </div>
+            </release>
+          </detail>
+        </data>
+      </event>
+      <event>
+        <data>
+          <detail>
+            <episode class="noseries">System</episode>
+            <release>
+              <entry><span class="label">Session Expiry</span><input id="sessionExpire" value="{{config.sessionExpire}}" type="number" min="0"></entry>
+              <entry class="tip"><span id="sessionExpireMessage">Login session expiry in days. Set to 0 to never expire sessions.</span></entry>
+              <entry><span class="label">Cache Size</span><input id="maxImageCacheSize" value="{{config.maxImageCacheSize}}"></entry>
+              <entry class="tip"><span id="maxImageCacheSizeMessage">MB of memory to use for series image caching. Set to 0 to disable caching.</span></entry>
+              <entry><span class="label">Log Level</span>
+                <select id ="logLevel">
+                  <option {{ifEqual config.logLevel 'error' 'selected' ''}} value="error">error</option>
+                  <option {{ifEqual config.logLevel 'warn' 'selected' ''}} value="warn">warn</option>
+                  <option {{ifEqual config.logLevel 'info' 'selected' ''}} value="info">info</option>
+                  <option {{ifEqual config.logLevel 'verbose' 'selected' ''}} value="verbose">verbose</option>
+                  <option {{ifEqual config.logLevel 'debug' 'selected' ''}} value="debug">debug</option>
+                  <option {{ifEqual config.logLevel 'trace' 'selected' ''}} value="trace">trace</option>
+                </select>
+              </entry>
             </release>
           </detail>
         </data>

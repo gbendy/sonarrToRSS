@@ -1,11 +1,11 @@
 import { Config, Events, History, RSSFeed, SonarrApi } from './types';
 import { HostConfigResource, SeriesResource, WebHookPayload } from './sonarrApiV3';
-import { getSonarrApi, getSonarrHostConfig, isErrorWithCode, randomString } from './utils';
+import { getSonarrApi, getSonarrHostConfig, isErrorWithCode, randomString, validateLogLevel } from './utils';
 import type { Server } from 'node:http';
 import path from 'node:path';
 import { mkdir, readFile } from 'node:fs/promises';
 import { Request } from 'express';
-import { forCategory } from './logger';
+import { forCategory, setLevel } from './logger';
 import version from './version';
 import { ImageCache } from './imageCache';
 
@@ -324,6 +324,11 @@ export class State {
     try {
       const configJson = await readFile(configFilename,  { encoding: 'utf8' });
       Object.assign(config, JSON.parse(configJson));
+      if (!validateLogLevel(config)) {
+        logger.error(`Invalid log level ${config.logLevel}, defaulting to info`);
+        config.logLevel = 'info';
+      }
+      setLevel(config.logLevel);
     } catch (e) {
       if (isErrorWithCode(e)) {
         // readFile error, no file is OK since we'll show config UI

@@ -1,5 +1,6 @@
 import type { WebHookPayload, getApi } from './sonarrApiV3';
 import type { Feed, EventManager } from './feed';
+import { LogLevel } from './logger';
 
 export interface SonarrApiConfig {
   sonarrBaseUrl: string;
@@ -23,6 +24,7 @@ export interface UserConfig extends SonarrApiConfig {
   feedJson: boolean;
   discardResolvedHealthEvents: boolean;
   maxImageCacheSize: number;
+  logLevel: LogLevel;
 }
 
 export interface Config extends UserConfig {

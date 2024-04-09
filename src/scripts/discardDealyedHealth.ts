@@ -30,6 +30,7 @@ const defaultConfig: Config = {
   feedJson: false,
   discardResolvedHealthEvents: false,
   maxImageCacheSize: 0,
+  logLevel: 'info',
   sessionSecrets: [],
   configured: false
 };

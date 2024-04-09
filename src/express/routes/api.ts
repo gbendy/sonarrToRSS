@@ -4,7 +4,7 @@ import { Config, SonarrApiConfig } from '../../types';
 import { arraysEqual, getSonarrApi, getSonarrHostConfig, isErrorWithCode, isNonEmptyString, validateSonarrApiConfig, validateUserConfig } from '../../utils';
 import { JSONObject } from '../../sonarrApiV3';
 import { writeFile } from 'node:fs/promises';
-import { forCategory } from '../../logger';
+import { forCategory, setLevel } from '../../logger';
 import feed from '../../feed';
 import { start } from '..';
 import { State } from '../../state';
@@ -109,10 +109,6 @@ export default function (state: State) {
       if (changedUsername) {
         newConfig.username = postedConfig.username;
       }
-      if (newConfig.sessionExpire !== postedConfig.sessionExpire) {
-        newConfig.sessionExpire = postedConfig.sessionExpire;
-        changedListen = true;
-      }
       let changedSonarrApi = false;
       if (newConfig.sonarrBaseUrl !== postedConfig.sonarrBaseUrl) {
         newConfig.sonarrBaseUrl = postedConfig.sonarrBaseUrl;
@@ -125,11 +121,6 @@ export default function (state: State) {
       if (newConfig.sonarrApiKey !== postedConfig.sonarrApiKey) {
         newConfig.sonarrApiKey = postedConfig.sonarrApiKey;
         changedSonarrApi = true;
-      }
-      let changedOther = false;
-      if (newConfig.maxImageCacheSize !== postedConfig.maxImageCacheSize && postedConfig.maxImageCacheSize >= 0) {
-        newConfig.maxImageCacheSize = postedConfig.maxImageCacheSize;
-        changedOther = true;
       }
       if (newConfig.feedTitle !== postedConfig.feedTitle) {
         newConfig.feedTitle = postedConfig.feedTitle;
@@ -162,6 +153,20 @@ export default function (state: State) {
       if (!arraysEqual(newConfig.feedHealthDelayTypes, postedConfig.feedHealthDelayTypes)) {
         newConfig.feedHealthDelayTypes = postedConfig.feedHealthDelayTypes;
         regenerateFeed = true;
+      }
+      let changedOther = false;
+      if (newConfig.sessionExpire !== postedConfig.sessionExpire) {
+        newConfig.sessionExpire = postedConfig.sessionExpire;
+        changedListen = true;
+      }
+      if (newConfig.maxImageCacheSize !== postedConfig.maxImageCacheSize && postedConfig.maxImageCacheSize >= 0) {
+        newConfig.maxImageCacheSize = postedConfig.maxImageCacheSize;
+        changedOther = true;
+      }
+      if (newConfig.logLevel !== postedConfig.logLevel) {
+        newConfig.logLevel = postedConfig.logLevel;
+        setLevel(newConfig.logLevel);
+        changedOther = true;
       }
       if (!newConfig.configured) {
         logger.info('Initial configuration complete');

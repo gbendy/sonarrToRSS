@@ -45,10 +45,14 @@ function elementValid() {
 function validate(elementId, validationFunction, getFunction) {
   const element = document.getElementById(elementId);
   const messageElement = document.getElementById(elementId + 'Message');
-  messageElement.classList.remove('error');
+  if (messageElement) {
+    messageElement.classList.remove('error');
+  }
 
   if (!validationFunction(element)) {
-    messageElement.classList.add('error');
+    if (messageElement) {
+      messageElement.classList.add('error');
+    }
     return [ false ];
   }
   return [ true, getFunction(element) ];
@@ -62,11 +66,9 @@ function validateConfig() {
   const [ usernameValid, username ] = validate('username', elementIsNonEmptyString, elementGetString);
   const [ passwordValid, password ] = validate('password', isConfigured ? elementIsString : elementIsNonEmptyString, elementGetString);
   const [ confirmPasswordValid, confirmPassword ] = validate('confirmPassword', elementMatchesString.bind(null, 'password'), elementGetString);
-  const [ sessionExpireValid, sessionExpire ] = validate('sessionExpire', elementIsFloatGTE.bind(null, 0), elementGetFloat);
   const [ sonarrBaseUrlValid, sonarrBaseUrl ] = validate('sonarrBaseUrl', elementIsHttpUrlOrEmptyString, elementGetString);
   const [ sonarrInsecureValid, sonarrInsecure ] = validate('sonarrInsecure', elementIsBoolean, elementGetBoolean);
   const [ sonarrApiKeyValid, sonarrApiKey ] = validate('sonarrApiKey', elementIsString, elementGetString);
-  const [ maxImageCacheSizeValid, maxImageCacheSize ] = validate('maxImageCacheSize', elementIsFloatGTE.bind(null, 0), elementGetFloat);
   const [ feedTitleValid, feedTitle ] = validate('feedTitle', elementIsString, elementGetString);
   const [ feedThemeValid, feedTheme ] = validate('feedTheme', elementIsOneOf.bind(null, [ 'auto', 'light', 'dark' ]), elementGetString);
   const [ feedRssValid, feedRss ] = validate('feedRss', elementIsBoolean, elementGetBoolean);
@@ -75,13 +77,17 @@ function validateConfig() {
   const [ feedHealthDelayValid, feedHealthDelay ] = validate('feedHealthDelay', elementIsGTE.bind(null, 0), elementGetInteger);
   const [ discardResolvedHealthEventsValid, discardResolvedHealthEvents ] = validate('discardResolvedHealthEvents', elementIsBoolean, elementGetBoolean);
   const [ feedHealthDelayTypesValid, feedHealthDelayTypes ] = validate('feedHealthDelayTypes', feedHealthDelay > 0 ? elementHasSelection : elementValid, elementGetSelections);
+  const [ sessionExpireValid, sessionExpire ] = validate('sessionExpire', elementIsFloatGTE.bind(null, 0), elementGetFloat);
+  const [ maxImageCacheSizeValid, maxImageCacheSize ] = validate('maxImageCacheSize', elementIsFloatGTE.bind(null, 0), elementGetFloat);
+  const [ logLevelValid, logLevel ] = validate('logLevel', elementIsOneOf.bind(null, [ 'error', 'warn', 'info', 'verbose', 'debug', 'trace' ]), elementGetString);
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
-    !usernameValid || !passwordValid || !confirmPasswordValid || !sessionExpireValid ||
-    !sonarrApiKeyValid || !sonarrApiKeyValid || !maxImageCacheSizeValid ||
+    !usernameValid || !passwordValid || !confirmPasswordValid ||
+    !sonarrApiKeyValid || !sonarrApiKeyValid ||
     !feedTitleValid || !feedThemeValid ||
     !feedRssValid || !feedAtomValid || !feedJsonValid ||
-    !feedHealthDelayValid || !discardResolvedHealthEventsValid || !feedHealthDelayTypesValid) {
+    !feedHealthDelayValid || !discardResolvedHealthEventsValid || !feedHealthDelayTypesValid ||
+    !sessionExpireValid || !maxImageCacheSizeValid || !logLevelValid) {
     throw 'Invalid Configuration';
   }
   return {
@@ -91,11 +97,9 @@ function validateConfig() {
     urlBase,
     username,
     password,
-    sessionExpire,
     sonarrBaseUrl,
     sonarrInsecure,
     sonarrApiKey,
-    maxImageCacheSize,
     feedTitle,
     feedTheme,
     feedRss,
@@ -103,7 +107,10 @@ function validateConfig() {
     feedJson,
     feedHealthDelay,
     discardResolvedHealthEvents,
-    feedHealthDelayTypes
+    feedHealthDelayTypes,
+    sessionExpire,
+    maxImageCacheSize,
+    logLevel
   }
 }
 
@@ -147,7 +154,7 @@ async function testSonarr() {
     if (res.ok) {
       const json = await res.json();
       if (json.result === 'OK') {
-        responseElement.textContent = `Connected to ${json.instanceName}`;
+        responseElement.textContent = `Connected to ${json.instanceName}.`;
         responseElement.classList.remove('error');
         responseElement.classList.add('good');
         setTimeout(() => {
@@ -157,7 +164,7 @@ async function testSonarr() {
         throw `Failed: ${json.message}`;
       }
     } else {
-      throw `Sonarr API test returned unexpected response: ${res.status} ${res.statusText}`;
+      throw `Sonarr API test returned unexpected response: ${res.status} ${res.statusText}.`;
     }
   } catch(e) {
     responseElement.textContent = isString(e) ? e : 'Error testing Sonarr API.';

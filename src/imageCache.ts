@@ -1,9 +1,9 @@
 import type { Response } from 'express';
 import { SeriesResource } from './sonarrApiV3';
 import { State } from './state';
-//import { forCategory } from './logger';
+import { forCategory } from './logger';
 
-//const logger = forCategory('cache');
+const logger = forCategory('cache');
 
 export type ImageStore = {
   image?: Buffer;
@@ -70,7 +70,7 @@ export class ImageCache {
         }
         const maxCacheSize = this.#state.config.maxImageCacheSize * 1048576;
         if (result.buffer.byteLength > maxCacheSize) {
-          //logger.debug(`image ${imageId} (${result.buffer.byteLength}) too large for cache ${maxCacheSize}`);
+          logger.debug(`Image ${imageId} (${result.buffer.byteLength}) too large for cache ${maxCacheSize}`);
           // image is larger than cache size, discard it
           this.#cachedImages.delete(imageId);
         } else {
@@ -82,12 +82,12 @@ export class ImageCache {
           while (this.#currentSize > maxCacheSize && this.#cachedImages.size) {
             const key = this.#cachedImages.keys().next().value;
             const dropping = this.#cachedImages.get(key) as ImageStore;
-            //logger.debug(`cache overflow ${this.#currentSize}/${maxCacheSize} when storing ${imageId} (${result.buffer.byteLength}). Dropping ${key} (${dropping.image?.byteLength})`);
+            logger.debug(`Cache overflow ${this.#currentSize}/${maxCacheSize} when storing ${imageId} (${result.buffer.byteLength}). Dropping ${key} (${dropping.image?.byteLength})`);
             // we know that key exists and that it has a buffer
             this.#currentSize -= (dropping.image as Buffer).byteLength;
             this.#cachedImages.delete(key);
           }
-          //logger.debug(`added ${imageId} (${result.buffer.byteLength}) to cache ${this.#currentSize}/${maxCacheSize}.`);
+          logger.debug(`Added ${imageId} (${result.buffer.byteLength}) to cache ${this.#currentSize}/${maxCacheSize}.`);
         }
       } catch(e) {
         for (const waitingRes of cached.waiting) {

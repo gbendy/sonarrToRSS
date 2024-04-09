@@ -88,6 +88,11 @@ export function validateSonarrApiConfig(config: SonarrApiConfig, strict: boolean
   return (strict ? isHttpUrl(config?.sonarrBaseUrl) : isHttpUrlOrEmptyString(config?.sonarrBaseUrl)) && isString(config?.sonarrApiKey) && isBoolean(config?.sonarrInsecure);
 }
 
+export function validateLogLevel(config: Config) {
+  return (config?.logLevel === 'error' || config?.logLevel === 'warn' || config?.logLevel === 'info' ||
+      config?.logLevel === 'verbose' || config?.logLevel === 'debug' || config?.logLevel === 'trace');
+}
+
 export function validateUserConfig(config: Config) {
   return validateSonarrApiConfig(config, false) &&
     isNumber(config?.port) && isString(config?.address) &&
@@ -98,7 +103,8 @@ export function validateUserConfig(config: Config) {
     isString(config?.feedTitle) &&
     (config?.feedTheme === 'auto' || config?.feedTheme === 'light' || config?.feedTheme === 'dark') &&
     isBoolean(config?.feedRss) && isBoolean(config?.feedAtom) && isBoolean(config?.feedJson) &&
-    isNumber(config?.feedHealthDelay) && isBoolean(config?.discardResolvedHealthEvents) && isArray(config?.feedHealthDelayTypes);
+    isNumber(config?.feedHealthDelay) && isBoolean(config?.discardResolvedHealthEvents) && isArray(config?.feedHealthDelayTypes) &&
+    validateLogLevel(config);
 }
 
 export function validateConfig(config: Config) {
