@@ -1,5 +1,4 @@
-import type { SeriesResouce, WebHookPayload, getApi } from './sonarrApiV3';
-import type { Response } from 'express';
+import type { WebHookPayload, getApi } from './sonarrApiV3';
 import type { Feed, EventManager } from './feed';
 
 export interface SonarrApiConfig {
@@ -16,13 +15,14 @@ export interface UserConfig extends SonarrApiConfig {
   username: string;
   sessionExpire: number;
   feedTitle: string;
-  feedTheme: 'auto' | 'light' | 'dark',
-  feedHealthDelay: number,
-  feedHealthDelayTypes: Array<string>,
-  feedRss: boolean,
-  feedAtom: boolean,
-  feedJson: boolean,
-  discardResolvedHealthEvents: boolean
+  feedTheme: 'auto' | 'light' | 'dark';
+  feedHealthDelay: number;
+  feedHealthDelayTypes: Array<string>;
+  feedRss: boolean;
+  feedAtom: boolean;
+  feedJson: boolean;
+  discardResolvedHealthEvents: boolean;
+  maxImageCacheSize: number;
 }
 
 export interface Config extends UserConfig {
@@ -42,17 +42,6 @@ export interface Event {
 
 export type History = Array<Event>;
 export type Events = Record<string, Event>;
-
-export type ImageCache = {
-  image?: Buffer;
-  contentType?: string;
-  waiting: Array<Response>;
-  getting: boolean;
-};
-
-export interface SeriesResourceExt extends SeriesResouce {
-  cachedImages: Map<string, ImageCache>;
-}
 
 export interface RSSFeed {
   feed: Feed;

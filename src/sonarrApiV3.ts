@@ -164,7 +164,7 @@ export interface SeriesStatisticsResource {
 
 export type SeriesType = 'standard' | 'daily' | 'anime';
 
-export interface SeriesResouce {
+export interface SeriesResource {
   id: number;
   title?: string;
   alternateTitles?: Array<AlternateTitleResource>;

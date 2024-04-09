@@ -64,6 +64,8 @@
               <entry class="tip"><span id="sonarrApiKeyMessage">API key for the Sonarr application we are processing web hooks for</span></entry>
               <entry><button id="testSonarr" type="button" onclick="testSonarr()">Test</button></entry>
               <entry class="tip"><span id="testSonarrResult">{{#if hostConfig.instanceName}}Connected to {{hostConfig.instanceName}}{{else}}Sonarr not found{{/if}}</span></entry>
+              <entry><span class="label">Cache Size</span><input id="maxImageCacheSize" value="{{config.maxImageCacheSize}}"></entry>
+              <entry class="tip"><span id="maxImageCacheSizeMessage">MB of memory to use for series image caching. Set to 0 to disable caching</span></entry>
             </release>
           </detail>
         </data>

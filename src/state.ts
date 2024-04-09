@@ -1,5 +1,5 @@
-import { Config, Events, History, ImageCache, RSSFeed, SeriesResourceExt, SonarrApi } from './types';
-import { HostConfigResource, WebHookPayload } from './sonarrApiV3';
+import { Config, Events, History, RSSFeed, SonarrApi } from './types';
+import { HostConfigResource, SeriesResource, WebHookPayload } from './sonarrApiV3';
 import { getSonarrApi, getSonarrHostConfig, isErrorWithCode, randomString } from './utils';
 import type { Server } from 'node:http';
 import path from 'node:path';
@@ -7,6 +7,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { Request } from 'express';
 import { forCategory } from './logger';
 import version from './version';
+import { ImageCache } from './imageCache';
 
 const logger = forCategory('state');
 
@@ -35,7 +36,7 @@ export class State {
   resolvedSessionDirectory: string;
   history!: History;
   events!: Events;
-  seriesData: Map<number, SeriesResourceExt> = new Map<number, SeriesResourceExt>;
+  seriesData: Map<number, SeriesResource> = new Map<number, SeriesResource>;
   queuedSeriesData: Map<number, Promise<void>> = new Map<number, Promise<void>>;
   feed!: RSSFeed;
   server!: Server;
@@ -43,6 +44,7 @@ export class State {
   hostConfig?: HostConfigResource;
   sonarrApi?: SonarrApi;
   pingId!: string;
+  imageCache: ImageCache;
 
   constructor(
     configFilename: string,
@@ -58,6 +60,8 @@ export class State {
     this.resolvedHistoryFile = path.join(this.dataDirectory, this.config.historyFile);
     this.resolvedPasswordFile = path.join(this.dataDirectory, this.config.passwordFile);
     this.resolvedSessionDirectory = path.join(this.dataDirectory, this.config.sessionDirectory);
+
+    this.imageCache = new ImageCache(this);
 
     this.regeneratePingId();
   }
@@ -164,8 +168,7 @@ export class State {
           continue;
         }
         if (!this.queuedSeriesData.has(seriesId)) {
-          this.queuedSeriesData.set(seriesId, this.sonarrApi.getJson<SeriesResourceExt>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
-            data.cachedImages = new Map<string, ImageCache>;
+          this.queuedSeriesData.set(seriesId, this.sonarrApi.getJson<SeriesResource>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
             this.seriesData.set(seriesId, data);
             this.queuedSeriesData.delete(seriesId);
           }));

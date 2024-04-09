@@ -66,6 +66,7 @@ function validateConfig() {
   const [ sonarrBaseUrlValid, sonarrBaseUrl ] = validate('sonarrBaseUrl', elementIsHttpUrlOrEmptyString, elementGetString);
   const [ sonarrInsecureValid, sonarrInsecure ] = validate('sonarrInsecure', elementIsBoolean, elementGetBoolean);
   const [ sonarrApiKeyValid, sonarrApiKey ] = validate('sonarrApiKey', elementIsString, elementGetString);
+  const [ maxImageCacheSizeValid, maxImageCacheSize ] = validate('maxImageCacheSize', elementIsFloatGTE.bind(null, 0), elementGetFloat);
   const [ feedTitleValid, feedTitle ] = validate('feedTitle', elementIsString, elementGetString);
   const [ feedThemeValid, feedTheme ] = validate('feedTheme', elementIsOneOf.bind(null, [ 'auto', 'light', 'dark' ]), elementGetString);
   const [ feedRssValid, feedRss ] = validate('feedRss', elementIsBoolean, elementGetBoolean);
@@ -77,7 +78,7 @@ function validateConfig() {
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
     !usernameValid || !passwordValid || !confirmPasswordValid || !sessionExpireValid ||
-    !sonarrApiKeyValid || !sonarrApiKeyValid ||
+    !sonarrApiKeyValid || !sonarrApiKeyValid || !maxImageCacheSizeValid ||
     !feedTitleValid || !feedThemeValid ||
     !feedRssValid || !feedAtomValid || !feedJsonValid ||
     !feedHealthDelayValid || !discardResolvedHealthEventsValid || !feedHealthDelayTypesValid) {
@@ -94,6 +95,7 @@ function validateConfig() {
     sonarrBaseUrl,
     sonarrInsecure,
     sonarrApiKey,
+    maxImageCacheSize,
     feedTitle,
     feedTheme,
     feedRss,

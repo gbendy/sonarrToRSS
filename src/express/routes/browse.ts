@@ -1,55 +1,7 @@
 import  { Router, Request, Response } from 'express';
-import { ImageCache, SeriesResourceExt } from '../../types';
 import { State } from '../../state';
 import { authenticated } from '../authentication';
 import { parseInteger } from '../../utils';
-
-function sendBuffer(buffer: Buffer, contentType: string|undefined, res: Response) {
-  res.statusCode = 200;
-  if (contentType) {
-    res.setHeader('content-type', contentType);
-  }
-  res.end(buffer);
-}
-
-function getSeriesImage(state: State, series: SeriesResourceExt, filename: string, res: Response) {
-  if (!series.cachedImages.has(filename)) {
-    series.cachedImages.set(filename, {
-      waiting: [],
-      getting: false
-    });
-  }
-  if (!state.sonarrApi) {
-    // no API and we don't have the image. Just 500 it.
-    res.statusCode = 500;
-    res.end();
-    return;
-  }
-  const cache = series.cachedImages.get(filename) as ImageCache;
-  if (cache.image) {
-    sendBuffer(cache.image, cache.contentType, res);
-    return;
-  }
-  cache.waiting.push(res);
-  if (!cache.getting) {
-    cache.getting = true;
-    state.sonarrApi.getBuffer(`mediacover/${series.id}/${filename}`).then(r => {
-      cache.getting = false;
-      cache.image = r.buffer;
-      cache.contentType = r.contentType;
-      for (const waitingRes of cache.waiting) {
-        sendBuffer(cache.image, cache.contentType, waitingRes);
-      }
-    }).catch(e => {
-      for (const waitingRes of cache.waiting) {
-        waitingRes.statusCode = 500;
-        waitingRes.status = e;
-        waitingRes.end();
-      }
-      cache.waiting.length = 0;
-    });
-  }
-}
 
 function getBanner(state: State, seriesId: number, res: Response) {
   const series = state.seriesData.get(seriesId);
@@ -58,7 +10,7 @@ function getBanner(state: State, seriesId: number, res: Response) {
     res.end();
     return;
   }
-  getSeriesImage(state, series, 'banner.jpg', res);
+  state.imageCache.getSeriesImage(series, 'banner.jpg', res);
 }
 
 export default function (state: State) {

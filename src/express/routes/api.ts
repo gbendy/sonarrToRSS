@@ -126,6 +126,11 @@ export default function (state: State) {
         newConfig.sonarrApiKey = postedConfig.sonarrApiKey;
         changedSonarrApi = true;
       }
+      let changedOther = false;
+      if (newConfig.maxImageCacheSize !== postedConfig.maxImageCacheSize && postedConfig.maxImageCacheSize >= 0) {
+        newConfig.maxImageCacheSize = postedConfig.maxImageCacheSize;
+        changedOther = true;
+      }
       if (newConfig.feedTitle !== postedConfig.feedTitle) {
         newConfig.feedTitle = postedConfig.feedTitle;
         regenerateFeed = true;
@@ -166,7 +171,9 @@ export default function (state: State) {
         result: 'OK',
       };
 
-      const configChanged = initialConfig || changedListen || changedApplicationUrl || changedUrlBase || changedUsername || changedSonarrApi || regenerateFeed;
+      const configChanged = initialConfig || changedListen ||
+                              changedApplicationUrl || changedUrlBase ||
+                              changedUsername || changedSonarrApi || changedOther || regenerateFeed;
       if (configChanged || password) {
         // write out new config to config file.
         if (configChanged) {

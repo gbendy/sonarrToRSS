@@ -42,7 +42,7 @@ function elementIsInteger(element) {
 }
 
 function elementIsFloat(element) {
-  return elementIsString(element) && /^[+-]?[0-9]+(\.[0-9]*)?$/.test(element.value) && !Number.isNaN(Number.parseFloat(element.value));
+  return elementIsString(element) && /^[+-]?[0-9]*(\.[0-9]*)?$/.test(element.value) && !Number.isNaN(Number.parseFloat(element.value));
 }
 
 function elementIsInRange(min, max, element) {

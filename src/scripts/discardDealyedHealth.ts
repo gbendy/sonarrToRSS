@@ -29,6 +29,7 @@ const defaultConfig: Config = {
   feedAtom: true,
   feedJson: false,
   discardResolvedHealthEvents: false,
+  maxImageCacheSize: 0,
   sessionSecrets: [],
   configured: false
 };

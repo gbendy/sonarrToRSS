@@ -94,6 +94,7 @@ export function validateUserConfig(config: Config) {
     isHttpUrl(config?.applicationUrl) && isString(config?.urlBase) &&
     isString(config?.username) &&
     isNumber(config?.sessionExpire) &&
+    isNumber(config?.maxImageCacheSize) &&
     isString(config?.feedTitle) &&
     (config?.feedTheme === 'auto' || config?.feedTheme === 'light' || config?.feedTheme === 'dark') &&
     isBoolean(config?.feedRss) && isBoolean(config?.feedAtom) && isBoolean(config?.feedJson) &&
