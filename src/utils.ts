@@ -88,27 +88,114 @@ export function validateSonarrApiConfig(config: SonarrApiConfig, strict: boolean
   return (strict ? isHttpUrl(config?.sonarrBaseUrl) : isHttpUrlOrEmptyString(config?.sonarrBaseUrl)) && isString(config?.sonarrApiKey) && isBoolean(config?.sonarrInsecure);
 }
 
-export function validateLogLevel(config: Config) {
-  return (config?.logLevel === 'error' || config?.logLevel === 'warn' || config?.logLevel === 'info' ||
-      config?.logLevel === 'verbose' || config?.logLevel === 'debug' || config?.logLevel === 'trace');
+export function validateLogLevel(config: Config, strict: boolean) {
+  return strict ? (config?.logLevel === 'error' || config?.logLevel === 'warn' || config?.logLevel === 'info' ||
+      config?.logLevel === 'verbose' || config?.logLevel === 'debug' || config?.logLevel === 'trace') : isString(config?.logLevel);
 }
 
-export function validateUserConfig(config: Config) {
-  return validateSonarrApiConfig(config, false) &&
-    isNumber(config?.port) && isString(config?.address) &&
-    isHttpUrl(config?.applicationUrl) && isString(config?.urlBase) &&
-    isString(config?.username) &&
-    isNumber(config?.sessionExpire) &&
-    isNumber(config?.maxImageCacheSize) &&
-    isString(config?.feedTitle) &&
-    (config?.feedTheme === 'auto' || config?.feedTheme === 'light' || config?.feedTheme === 'dark') &&
-    isBoolean(config?.feedRss) && isBoolean(config?.feedAtom) && isBoolean(config?.feedJson) &&
-    isNumber(config?.feedHealthDelay) && isBoolean(config?.discardResolvedHealthEvents) && isArray(config?.feedHealthDelayTypes) &&
-    validateLogLevel(config);
-}
-
-export function validateConfig(config: Config) {
-  return validateUserConfig(config) && isString(config?.historyFile) && isBoolean(config?.configured);
+export function validateUserConfig(config: Config, fixSoftErrors: boolean) {
+  const errors: Array<string> = [];
+  const warnings: Array<string> = [];
+  if (!validateSonarrApiConfig(config, config.configured)) {
+    errors.push('Invalid Sonarr API config');
+  }
+  if (!isNumber(config.port) || config.port <= 0 || config.port > 65535) {
+    errors.push(`Invalid port: ${config.port}. Must be between 0 and 65535`);
+  }
+  if (!isNonEmptyString(config.address)) {
+    errors.push(`Invalid address: ${config.address}. Must be a listen host address`);
+  }
+  if (config.configured) {
+    if (!isHttpUrl(config.applicationUrl)) {
+      errors.push(`Invalid applicationUrl: ${config.applicationUrl}. Must be a URL`);
+    }
+    if (!isNonEmptyString(config.username)) {
+      errors.push(`Invalid username: ${config.username}. Must be a non empty string`);
+    }
+  } else {
+    if (!isString(config.applicationUrl)) {
+      errors.push(`Invalid applicationUrl: ${config.applicationUrl}. Must be a string`);
+    }
+    if (!isString(config.username)) {
+      errors.push(`Invalid username: ${config.username}. Must be a string`);
+    }
+  }
+  if (!isString(config.urlBase)) {
+    errors.push(`Invalid urlBase: ${config.urlBase}. Must be a string`);
+  }
+  if (!isNumber(config.sessionExpire) || config.sessionExpire < 0) {
+    if (fixSoftErrors) {
+      warnings.push(`Invalid sessionExpire: ${config.sessionExpire}. Setting to 7`);
+      config.sessionExpire = 7;
+    } else {
+      errors.push(`Invalid sessionExpire: ${config.sessionExpire}. Must be a number >= 0`);
+    }
+  }
+  if (!isString(config.feedTitle)) {
+    errors.push(`Invalid feedTitle: ${config.feedTitle}. Must be a string`);
+  }
+  if (config.feedTheme !== 'auto' && config.feedTheme !== 'light' && config.feedTheme !== 'dark') {
+    errors.push(`Invalid feedTheme: ${config.feedTitle}. Must be one of auto, light or dark`);
+  }
+  if (!isBoolean(config.feedRss)) {
+    errors.push(`Invalid feedRss: ${config.feedRss}. Must be a boolean`);
+  }
+  if (!isBoolean(config.feedAtom)) {
+    errors.push(`Invalid feedAtom: ${config.feedAtom}. Must be a boolean`);
+  }
+  if (!isBoolean(config.feedJson)) {
+    errors.push(`Invalid feedJson: ${config.feedJson}. Must be a boolean`);
+  }
+  if (!isNumber(config.maxImageCacheSize) || config.maxImageCacheSize < 0) {
+    if (fixSoftErrors) {
+      warnings.push(`Invalid maxImageCacheSize: ${config.maxImageCacheSize}. Setting to 50`);
+      config.maxImageCacheSize = 50;
+    } else {
+      errors.push(`Invalid maxImageCacheSize: ${config.maxImageCacheSize}. Must be a number >= 0`);
+    }
+  }
+  if (!isNumber(config.feedHealthDelay) || config.feedHealthDelay < 0) {
+    if (fixSoftErrors) {
+      warnings.push(`Invalid feedHealthDelay: ${config.feedHealthDelay}. Setting to 0`);
+      config.feedHealthDelay = 0;
+    } else {
+      errors.push(`Invalid feedHealthDelay: ${config.feedHealthDelay}. Must be a number >= 0`);
+    }
+  }
+  if (!isArray(config.feedHealthDelayTypes)) {
+    errors.push(`Invalid feedHealthDelayTypes: ${config.feedHealthDelayTypes}. Must be an array of strings`);
+  }
+  if (!isBoolean(config.discardResolvedHealthEvents)) {
+    errors.push(`Invalid discardResolvedHealthEvents: ${config.discardResolvedHealthEvents}. Must be a boolean`);
+  }
+  if (!isNumber(config.feedLowWaterMark) || config.feedLowWaterMark < 1) {
+    if (fixSoftErrors) {
+      warnings.push(`Invalid feedLowWaterMark: ${config.feedLowWaterMark}. Setting to 20`);
+      config.feedLowWaterMark = 20;
+    } else {
+      errors.push(`Invalid feedLowWaterMark: ${config.feedLowWaterMark}. Must be an integer > 0`);
+    }
+  }
+  if (!isNumber(config.feedHighWaterMark) || config.feedHighWaterMark < config.feedLowWaterMark) {
+    if (fixSoftErrors) {
+      warnings.push(`Invalid feedHighWaterMark: ${config.feedHighWaterMark}. Setting to ${config.feedLowWaterMark + 20}`);
+      config.feedHighWaterMark = config.feedLowWaterMark + 20;
+    } else {
+      errors.push(`Invalid feedHighWaterMark: ${config.feedHighWaterMark}. Must be an integer >= feedLowWaterMark`);
+    }
+  }
+  if (!validateLogLevel(config, true)) {
+    if (fixSoftErrors) {
+      warnings.push(`Invalid logLevel: ${config.logLevel}, defaulting to info`);
+      config.logLevel = 'info';
+    } else {
+      errors.push(`Invalid logLevel: ${config.logLevel}. Must be one of error, warn, info, verbose, debug or trace`);
+    }
+  }
+  return {
+    errors,
+    warnings
+  };
 }
 
 export function getSonarrApi(config: SonarrApiConfig) {

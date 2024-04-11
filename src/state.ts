@@ -1,6 +1,6 @@
 import { Config, Events, History, RSSFeed, SonarrApi } from './types';
 import { HostConfigResource, SeriesResource, WebHookPayload } from './sonarrApiV3';
-import { getSonarrApi, getSonarrHostConfig, isErrorWithCode, randomString, validateLogLevel } from './utils';
+import { getSonarrApi, getSonarrHostConfig, isErrorWithCode, randomString, validateUserConfig } from './utils';
 import type { Server } from 'node:http';
 import path from 'node:path';
 import { mkdir, readFile } from 'node:fs/promises';
@@ -324,9 +324,17 @@ export class State {
     try {
       const configJson = await readFile(configFilename,  { encoding: 'utf8' });
       Object.assign(config, JSON.parse(configJson));
-      if (!validateLogLevel(config)) {
-        logger.error(`Invalid log level ${config.logLevel}, defaulting to info`);
-        config.logLevel = 'info';
+      const validation = validateUserConfig(config, true);
+      if (validation.warnings.length) {
+        for (const message of validation.warnings) {
+          logger.warn(message);
+        }
+      }
+      if (validation.errors.length) {
+        for (const message of validation.errors) {
+          logger.error(message);
+        }
+        throw 'Invalid config';
       }
       setLevel(config.logLevel);
     } catch (e) {

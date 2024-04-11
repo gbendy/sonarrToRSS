@@ -1,7 +1,7 @@
 import  express, { Router } from 'express';
 import cors from 'cors';
 import { Config, SonarrApiConfig } from '../../types';
-import { arraysEqual, getSonarrApi, getSonarrHostConfig, isErrorWithCode, isNonEmptyString, validateSonarrApiConfig, validateUserConfig } from '../../utils';
+import { arraysEqual, getSonarrApi, getSonarrHostConfig, isErrorWithCode, isNonEmptyString, validateUserConfig, validateSonarrApiConfig } from '../../utils';
 import { JSONObject } from '../../sonarrApiV3';
 import { writeFile } from 'node:fs/promises';
 import { forCategory, setLevel } from '../../logger';
@@ -72,9 +72,14 @@ export default function (state: State) {
     const postedConfig = req.body as Config;
     logger.info('Updating configuration');
     const password = extractPassword(postedConfig);
-
-    if (!validateUserConfig(postedConfig) || (!state.config.configured && !password)) {
+    // if a config has been posted then it must be a valid
+    // configuration. If we are not already configured then
+    // it must also contain a password
+    postedConfig.configured = true;
+    const configTest = validateUserConfig(postedConfig, false);
+    if (configTest.errors.length || (!state.config.configured && !password)) {
       logger.error('Invalid configuration');
+      logger.debug(JSON.stringify(configTest.errors));
       res.statusCode = 400;
       res.statusMessage = 'Invalid Body';
       res.end();
@@ -86,6 +91,7 @@ export default function (state: State) {
       const newConfig = { ...state.config };
       const initialConfig = !newConfig.configured;
 
+      let changedOther = false;
       let changedListen = false;
       if (newConfig.port !== postedConfig.port) {
         newConfig.port = postedConfig.port;
@@ -146,6 +152,14 @@ export default function (state: State) {
         newConfig.feedHealthDelay = postedConfig.feedHealthDelay;
         regenerateFeed = true;
       }
+      if (newConfig.feedLowWaterMark !== postedConfig.feedLowWaterMark) {
+        newConfig.feedLowWaterMark = postedConfig.feedLowWaterMark;
+        changedOther = true;
+      }
+      if (newConfig.feedHighWaterMark !== postedConfig.feedHighWaterMark) {
+        newConfig.feedHighWaterMark = postedConfig.feedHighWaterMark;
+        changedOther = true;
+      }
       if (newConfig.discardResolvedHealthEvents !== postedConfig.discardResolvedHealthEvents) {
         newConfig.discardResolvedHealthEvents = postedConfig.discardResolvedHealthEvents;
         regenerateFeed = true;
@@ -154,12 +168,11 @@ export default function (state: State) {
         newConfig.feedHealthDelayTypes = postedConfig.feedHealthDelayTypes;
         regenerateFeed = true;
       }
-      let changedOther = false;
       if (newConfig.sessionExpire !== postedConfig.sessionExpire) {
         newConfig.sessionExpire = postedConfig.sessionExpire;
         changedListen = true;
       }
-      if (newConfig.maxImageCacheSize !== postedConfig.maxImageCacheSize && postedConfig.maxImageCacheSize >= 0) {
+      if (newConfig.maxImageCacheSize !== postedConfig.maxImageCacheSize) {
         newConfig.maxImageCacheSize = postedConfig.maxImageCacheSize;
         changedOther = true;
       }

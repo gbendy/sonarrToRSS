@@ -22,6 +22,8 @@ export interface UserConfig extends SonarrApiConfig {
   feedRss: boolean;
   feedAtom: boolean;
   feedJson: boolean;
+  feedLowWaterMark: number;
+  feedHighWaterMark: number;
   discardResolvedHealthEvents: boolean;
   maxImageCacheSize: number;
   logLevel: LogLevel;

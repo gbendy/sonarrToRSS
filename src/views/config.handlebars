@@ -114,6 +114,12 @@
               <entry class="tip"><span id="sessionExpireMessage">Login session expiry in days. Set to 0 to never expire sessions.</span></entry>
               <entry><span class="label">Cache Size</span><input id="maxImageCacheSize" value="{{config.maxImageCacheSize}}"></entry>
               <entry class="tip"><span id="maxImageCacheSizeMessage">MB of memory to use for series image caching. Set to 0 to disable caching.</span></entry>
+              <entrytip class="tooltiplink" {{> delayToolTip }} data-title="This should be tuned relative to how often your feed is checked and how many events you expect in that timeframe to ensure events are not missed.">
+                <entry><span class="label">Feed Start Size</span><input id ="feedLowWaterMark" value="{{config.feedLowWaterMark}}"></entry>
+                <entry class="tip"><span id="feedLowWaterMarkMessage">Feed will initialise to at most this many events.</span></entry>
+              </entrytip>
+              <entry><span class="label">Feed Max Size</span><input id ="feedHighWaterMark" value="{{config.feedHighWaterMark}}"></entry>
+              <entry class="tip"><span id="feedHighWaterMarkMessage">Maximum feed size, once the feed has more than this many events it will reset to the initial size. Must be at least 'Feed Start Size'</span></entry>
               <entry><span class="label">Log Level</span>
                 <select id ="logLevel">
                   <option {{ifEqual config.logLevel 'error' 'selected' ''}} value="error">error</option>

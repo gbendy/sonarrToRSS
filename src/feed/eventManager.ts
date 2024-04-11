@@ -272,5 +272,9 @@ export class EventManager {
       await this.#state.ensureSeries(new Set([ event.event.series?.id ]));
     }
     this.#state.feed.feed.addItem(await this.#createFeedItem(event));
+    if (this.#state.feed.feed.items.length > this.#state.config.feedHighWaterMark) {
+      logger.debug(`Feed exceeded high watermark of ${this.#state.config.feedHighWaterMark} items, reducing to ${this.#state.config.feedLowWaterMark}`);
+      this.#state.feed.feed.items.splice(0,this.#state.feed.feed.items.length-this.#state.config.feedLowWaterMark);
+    }
   }
 }

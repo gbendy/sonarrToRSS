@@ -26,6 +26,8 @@ const defaultConfig: Config = {
   feedRss: true,
   feedAtom: true,
   feedJson: false,
+  feedLowWaterMark: 20,
+  feedHighWaterMark: 50,
   discardResolvedHealthEvents: false,
   maxImageCacheSize: 50,
   logLevel: 'info',

@@ -24,7 +24,7 @@ export async function init(state: State) {
     eventManager: new EventManager(state)
   };
 
-  const events = state.feed.eventManager.generateHistorical(20);
+  const events = state.feed.eventManager.generateHistorical(state.config.feedLowWaterMark);
   const promises: Array<Promise<unknown>> = [];
   const seriesIds = new Set<number>;
 

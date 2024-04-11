@@ -79,6 +79,8 @@ function validateConfig() {
   const [ feedHealthDelayTypesValid, feedHealthDelayTypes ] = validate('feedHealthDelayTypes', feedHealthDelay > 0 ? elementHasSelection : elementValid, elementGetSelections);
   const [ sessionExpireValid, sessionExpire ] = validate('sessionExpire', elementIsFloatGTE.bind(null, 0), elementGetFloat);
   const [ maxImageCacheSizeValid, maxImageCacheSize ] = validate('maxImageCacheSize', elementIsFloatGTE.bind(null, 0), elementGetFloat);
+  const [ feedLowWaterMarkValid, feedLowWaterMark ] = validate('feedLowWaterMark', elementIsGTE.bind(null, 1), elementGetInteger);
+  const [ feedHighWaterMarkValid, feedHighWaterMark ] = validate('feedHighWaterMark', elementIsGTE.bind(null, feedLowWaterMark), elementGetInteger);
   const [ logLevelValid, logLevel ] = validate('logLevel', elementIsOneOf.bind(null, [ 'error', 'warn', 'info', 'verbose', 'debug', 'trace' ]), elementGetString);
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
@@ -87,7 +89,7 @@ function validateConfig() {
     !feedTitleValid || !feedThemeValid ||
     !feedRssValid || !feedAtomValid || !feedJsonValid ||
     !feedHealthDelayValid || !discardResolvedHealthEventsValid || !feedHealthDelayTypesValid ||
-    !sessionExpireValid || !maxImageCacheSizeValid || !logLevelValid) {
+    !sessionExpireValid || !maxImageCacheSizeValid || !feedLowWaterMarkValid || !feedHighWaterMarkValid || !logLevelValid) {
     throw 'Invalid Configuration';
   }
   return {
@@ -110,6 +112,8 @@ function validateConfig() {
     feedHealthDelayTypes,
     sessionExpire,
     maxImageCacheSize,
+    feedLowWaterMark,
+    feedHighWaterMark,
     logLevel
   }
 }
