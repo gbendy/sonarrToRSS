@@ -56,6 +56,9 @@ Webhook Connection to send events to `http://localhost:18989/sonarr`. RSS feed i
 - Configurable cooldown for Health events to suppress transient issues from the feed, or purge them
   from history entirely.
 
+### Current Version
+- **1.0.1** [Changelog](CHANGELOG.md) (11/4/24)
+
 ## I've forgotten my password!
 
 Cleansing with fire is the preferred solution to this problem.
