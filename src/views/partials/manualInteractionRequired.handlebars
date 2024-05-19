@@ -1,0 +1,13 @@
+{{#each event.episodes}}
+  <episode {{#unless (showBanner ../event)}}class="noseries"{{/unless}}>Manual Interaction Required {{#unless (showBanner ../event)}}{{../event/series/title}}{{/unless}} S{{this.seasonNumber}} E{{this.episodeNumber}} - {{this.title}}</episode>
+{{/each}}
+<release>
+<entry><span class="label">Client</span>: {{event.downloadClient}}</entry>
+<entry><span class="label">Title</span>: {{event.downloadInfo.title}}</entry>
+{{#each event.downloadStatusMessages}}
+<entry><span class="label">Status</span>:<span class="keepCase {{ifEqual ../event.downloadStatus "Warning" "warning" "error"}}"> {{this.title}}</span></entry>
+  {{#each this.messages}}
+  <entry><span class="message keepCase {{ifEqual ../../event.downloadStatus "Warning" "warning" "error"}}">&ndash; {{this}}</span></entry>
+  {{/each}}
+{{/each}}
+</release>

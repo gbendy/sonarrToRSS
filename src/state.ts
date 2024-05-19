@@ -18,6 +18,7 @@ const eventTypePartials = {
   Grab: 'grab',
   Health: 'health',
   HealthRestored: 'healthRestored',
+  ManualInteractionRequired: 'manualInteractionRequired',
   Rename: 'rename',
   SeriesAdd: 'seriesAdd',
   SeriesDelete: 'seriesDelete',
@@ -298,7 +299,7 @@ export class State {
     };
   }
 
-  handlebarOptions(options: Record<string,unknown>, req: Request & { isAuthenticated?: () => boolean }) {
+  handlebarOptions(options: Record<string,unknown>, req: Request) {
     if (!options.helpers) {
       options.helpers = this.handlebarsHelpers;
     }
