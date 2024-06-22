@@ -1,7 +1,7 @@
 import  express, { Router, Request, Response } from 'express';
 import { forCategory } from '../../logger';
 import { State } from '../../state';
-import { basicLogin } from '../authentication';
+import { basicAuthenticated } from '../authentication';
 
 const logger = forCategory('sonarr');
 
@@ -22,8 +22,8 @@ export default function (state: State) {
     }
   };
 
-  router.post(state.sonarrUrl, basicLogin(state), processEvent);
-  router.put(state.sonarrUrl, basicLogin(state), processEvent);
+  router.post(state.sonarrUrl, basicAuthenticated(state), processEvent);
+  router.put(state.sonarrUrl, basicAuthenticated(state), processEvent);
 
   return router;
 }

@@ -1,6 +1,6 @@
 import  { Router, Request, Response, NextFunction } from 'express';
 import { State } from '../../state';
-import { authenticated, localLogin } from '../authentication';
+import { sessionAuthenticated, performSiteLogin } from '../authentication';
 
 export default function (state: State) {
   const router = Router();
@@ -12,9 +12,9 @@ export default function (state: State) {
     }, req));
   });
 
-  router.post('/login', localLogin(state));
+  router.post('/login', performSiteLogin(state));
 
-  router.get('/logout', authenticated(state), (req: Request, res: Response, next: NextFunction) => {
+  router.get('/logout', sessionAuthenticated(state), (req: Request, res: Response, next: NextFunction) => {
     req.logout(function(err) {
       if (err) { return next(err); }
       res.redirect(state.resolveUrlPath('/'));

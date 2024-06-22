@@ -105,18 +105,27 @@ export function validateUserConfig(config: Config, fixSoftErrors: boolean) {
   if (!isNonEmptyString(config.address)) {
     errors.push(`Invalid address: ${config.address}. Must be a listen host address`);
   }
+
+  if (config.authenticationMethod !== 'forms' && config.authenticationMethod !== 'external' && config.authenticationMethod !== 'externalExceptWebhook') {
+    errors.push(`Invalid authenticationMethod: ${config.authenticationMethod}. Must be one of 'forms', 'external' or 'externalExceptWebhook'`);
+  }
+  if (config.authenticationRequired !== 'enabled' && config.authenticationRequired !== 'disabledForLocalAddresses') {
+    errors.push(`Invalid authenticationRequired: ${config.authenticationRequired}. Must be one of 'enabled' or 'disabledForLocalAddresses'`);
+  }
+  const authenticationEnabled = config.authenticationMethod !== 'external';
+
   if (config.configured) {
     if (!isHttpUrl(config.applicationUrl)) {
       errors.push(`Invalid applicationUrl: ${config.applicationUrl}. Must be a URL`);
     }
-    if (!isNonEmptyString(config.username)) {
+    if (authenticationEnabled && !isNonEmptyString(config.username)) {
       errors.push(`Invalid username: ${config.username}. Must be a non empty string`);
     }
   } else {
     if (!isString(config.applicationUrl)) {
       errors.push(`Invalid applicationUrl: ${config.applicationUrl}. Must be a string`);
     }
-    if (!isString(config.username)) {
+    if (authenticationEnabled && !isString(config.username)) {
       errors.push(`Invalid username: ${config.username}. Must be a string`);
     }
   }

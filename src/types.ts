@@ -1,5 +1,6 @@
 import type { WebHookPayload, getApi } from './sonarrApiV3';
 import type { Feed, EventManager } from './feed';
+import type { Request as ExpressRequest } from 'express';
 import { LogLevel } from './logger';
 
 export interface SonarrApiConfig {
@@ -27,6 +28,8 @@ export interface UserConfig extends SonarrApiConfig {
   discardResolvedHealthEvents: boolean;
   maxImageCacheSize: number;
   logLevel: LogLevel;
+  authenticationMethod: 'forms' | 'external' | 'externalExceptWebhook';
+  authenticationRequired: 'enabled' | 'disabledForLocalAddresses';
 }
 
 export interface Config extends UserConfig {
@@ -53,3 +56,7 @@ export interface RSSFeed {
 }
 
 export type SonarrApi = ReturnType<typeof getApi>;
+
+export interface SRSSRequest extends ExpressRequest {
+  isLocalIpAddr: boolean;
+}

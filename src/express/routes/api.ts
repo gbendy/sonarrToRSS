@@ -9,7 +9,7 @@ import feed from '../../feed';
 import { start } from '..';
 import { State } from '../../state';
 import { noCache } from '../middleware';
-import { authenticated, updatePassword } from '../authentication';
+import { sessionAuthenticated, updatePassword } from '../authentication';
 
 const logger = forCategory('api');
 
@@ -36,7 +36,7 @@ export default function (state: State) {
     res.end();
   });
 
-  router.post('/testSonarrUrl', authenticated(state), express.json(), async (req, res) => {
+  router.post('/testSonarrUrl', sessionAuthenticated(state), express.json(), async (req, res) => {
     logger.info('Testing Sonarr URL');
     const sonarrApi = req.body as SonarrApiConfig;
     if (!validateSonarrApiConfig(sonarrApi, true)) {
@@ -68,7 +68,7 @@ export default function (state: State) {
     }
   });
 
-  router.post('/saveConfig', authenticated(state), express.json(), async (req, res) => {
+  router.post('/saveConfig', sessionAuthenticated(state), express.json(), async (req, res) => {
     const postedConfig = req.body as Config;
     logger.info('Updating configuration');
     const password = extractPassword(postedConfig);
@@ -110,6 +110,14 @@ export default function (state: State) {
       const changedUrlBase = newConfig.urlBase !== postedConfig.urlBase;
       if (changedUrlBase) {
         newConfig.urlBase = postedConfig.urlBase;
+      }
+      if (newConfig.authenticationMethod !== postedConfig.authenticationMethod) {
+        newConfig.authenticationMethod = postedConfig.authenticationMethod;
+        changedListen = true;
+      }
+      if (newConfig.authenticationRequired !== postedConfig.authenticationRequired) {
+        newConfig.authenticationRequired = postedConfig.authenticationRequired;
+        changedListen = true;
       }
       const changedUsername = newConfig.username !== postedConfig.username;
       if (changedUsername) {

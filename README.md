@@ -4,10 +4,12 @@ Sonarr To RSS is a [Sonarr](https://sonarr.tv/ "Sonarr") Webhook connection endp
 events to RSS/Atom/JSON feeds and provides a paginated website to browse historical events.
 
 #### Light mode
-[![Light mode](img/lightMode.png)](https://raw.githubusercontent.com/gbendy/sonarrToRSS/main/img/lightMode.png)
+[![Light
+mode](img/lightMode.png)](https://raw.githubusercontent.com/gbendy/sonarrToRSS/main/img/lightMode.png)
 
 #### Dark mode
-[![Dark mode](img/darkMode.png)](https://raw.githubusercontent.com/gbendy/sonarrToRSS/main/img/darkMode.png)
+[![Dark
+mode](img/darkMode.png)](https://raw.githubusercontent.com/gbendy/sonarrToRSS/main/img/darkMode.png)
 
 #### RSS feed
 [![RSS feed](img/feed.png)](https://raw.githubusercontent.com/gbendy/sonarrToRSS/main/img/feed.png)
@@ -51,13 +53,65 @@ Webhook Connection to send events to `http://localhost:18989/sonarr`. RSS feed i
   your Sonarr installation to add series banner images in events.
 - Light and dark themes.
 - Supports domain and subfolder based reverse proxies.
-  [SWAG](https://docs.linuxserver.io/general/swag "SWAG") configurations are available
-  [here](https://github.com/gbendy/sonarrToRSS/tree/main/swag "Swag configuration files").
+  [SWAG](https://docs.linuxserver.io/general/swag "SWAG") configurations are available [here](swag
+  "Swag configuration files").
 - Configurable cooldown for Health events to suppress transient issues from the feed, or purge them
   from history entirely.
 
-### Current Version
-- **1.0.1** [Changelog](CHANGELOG.md) (11/4/24)
+### Authentication
+
+Sonarr to RSS requires authentication for both the browser interface and the Sonarr webhook
+endpoint. Feed endpoints are not authenticated and there is now way to enable this.
+
+#### Local Access
+
+If you do not expose the app externally and/or do not wish to have authentication required for local
+(e.g. LAN) access then change Authentication => Required to `Disabled For Local Addresses`. As this
+removes authentication from the browser interface it is the user's responsibility to understand the
+risks. Sonarr to RSS uses [ipaddr.js](https://www.npmjs.com/package/ipaddr.js) to identify local IP
+addresses. Any ips in the following ranges are considered local and exempt from authentication:
+
+- `loopback`
+- `private`
+- `linkLocal`
+- `uniqueLocal`
+
+Note that the Sonarr webhook endpoint will still require authentication.
+
+#### External Authentication
+
+If you use an external authentication method such as Authelia, Authetik, NGINX Basic auth, etc. you
+can prevent the need to double authenticate by shutting down the app, setting
+`"authenticationMethod: "external"` in the `config.json` file, and restarting the app. This will
+disable Sonarr to RSS based authentication for all endpoints. It is expected that authentication is
+then handled by a higher level reverse proxy.
+
+An additional supported setting is `"authenticationMethod: "externalExceptWebhook"`. This disables
+authentication for all endpoints except for the Sonarr webhook.
+
+Neither of these options are available via the configuration interface unless first set in
+`config.json` directly.
+
+#### Summary
+
+The following table summarises which endpoints require authentication under different configurations combinations
+
+| authenticationMethod | authenticationRequired | browser | webhook | feed | browser (local) | webhook (local) | feed (local) |
+| --- | --- | :---: | :---: | :---: | :---: | :---: | :---: |
+| `forms` | `enabled` | ✅ | ✅ | ❌ | ✅ | ✅ | ❌
+| `forms` | `disabledForLocalAddresses` | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| `externalExceptWebhook` | `enabled` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| `externalExceptWebhook` | `disabledForLocalAddresses` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| `external` | `enabled` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `external` | `disabledForLocalAddresses` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+##### Endpoint categories
+
+- webhook: `/sonarr`
+- feed: `/rss` `/atom` `/json`
+- brower: all other endpoints
+
+The (local) suffix indicates access from the local network.
 
 ## I've forgotten my password!
 
@@ -66,6 +120,12 @@ Cleansing with fire is the preferred solution to this problem.
 Alternatively, shutdown the server. Edit `config.json` and set `"configured": false` then restart
 the server. It will start in initial configuration mode, with your original configuration intact and
 force you to set a new password.
+
+## Releases
+
+### 1.0.1 (11/4/24) [Changelog](CHANGELOG.md)
+1.0.0 (31/3/24)
+[Changelog](https://github.com/gbendy/sonarrToRSS/blob/af5c46bddcfa012ac3ca8461905364f361d5b33a/CHANGELOG.md)
 
 ## Contributing
 
