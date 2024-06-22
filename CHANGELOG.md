@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.0.2 - 2024-06-22
+
+### New Features
+
+Added renderer for 'ManualInteractionRequired' events. All Sonarr event types now have specialised
+renders.
+
+Added configuration option to disable authentication for local network access.
+
+Added configuration file option to disable authentication entirely for when authentication is
+provided by a reverse proxy.
+
 ## 1.0.1 - 2024-04-11
 
 ### New Features

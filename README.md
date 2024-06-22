@@ -94,7 +94,8 @@ Neither of these options are available via the configuration interface unless fi
 
 #### Summary
 
-The following table summarises which endpoints require authentication under different configurations combinations
+The following table summarises which endpoints require authentication under different configuration
+combinations.
 
 | authenticationMethod | authenticationRequired | browser | webhook | feed | browser (local) | webhook (local) | feed (local) |
 | --- | --- | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -123,7 +124,11 @@ force you to set a new password.
 
 ## Releases
 
-### 1.0.1 (11/4/24) [Changelog](CHANGELOG.md)
+### 1.0.2 (22/6/24) [Changelog](CHANGELOG.md)
+
+1.0.1 (11/4/24)
+[Changelog](https://github.com/gbendy/sonarrToRSS/blob/b89592ffed29850fa7e08fe7d6ec087d3c48ccfa/CHANGELOG.md)
+
 1.0.0 (31/3/24)
 [Changelog](https://github.com/gbendy/sonarrToRSS/blob/af5c46bddcfa012ac3ca8461905364f361d5b33a/CHANGELOG.md)
 
