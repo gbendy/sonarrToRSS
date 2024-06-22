@@ -1,6 +1,6 @@
 {
   "name": "sonarrtorss",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Converts Sonarr webhooks to an RSS feed and webpage",
   "main": "src/index.ts",
   "scripts": {
