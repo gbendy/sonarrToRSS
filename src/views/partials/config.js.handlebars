@@ -63,7 +63,9 @@ function validateConfig() {
   const [ addressValid, address ] = validate('address', elementIsNonEmptyString, elementGetString);
   const [ applicationUrlValid, applicationUrl ] = validate('applicationUrl', elementIsHttpUrl, elementGetString);
   const [ urlBaseValid, urlBase ] = validate('urlBase', elementIsString, elementGetString);
-  const [ usernameValid, username ] = validate('username', elementIsNonEmptyString, elementGetString);
+  const [ authenticationMethodValid, authenticationMethod ] = validate('authenticationMethod', elementIsOneOf.bind(null, [ 'forms', 'external', 'externalExceptWebhook' ]), elementGetString);
+  const [ authenticationRequiredValid, authenticationRequired ] = validate('authenticationRequired', elementIsOneOf.bind(null, [ 'enabled', 'disabledForLocalAddresses' ]), elementGetString);
+  const [ usernameValid, username ] = validate('username', authenticationMethod === 'external' ? elementIsString : elementIsNonEmptyString, elementGetString);
   const [ passwordValid, password ] = validate('password', isConfigured ? elementIsString : elementIsNonEmptyString, elementGetString);
   const [ confirmPasswordValid, confirmPassword ] = validate('confirmPassword', elementMatchesString.bind(null, 'password'), elementGetString);
   const [ sonarrBaseUrlValid, sonarrBaseUrl ] = validate('sonarrBaseUrl', elementIsHttpUrlOrEmptyString, elementGetString);
@@ -84,6 +86,7 @@ function validateConfig() {
   const [ logLevelValid, logLevel ] = validate('logLevel', elementIsOneOf.bind(null, [ 'error', 'warn', 'info', 'verbose', 'debug', 'trace' ]), elementGetString);
 
   if (!portValid || !addressValid || !applicationUrlValid || !urlBaseValid ||
+    !authenticationMethodValid || !authenticationRequiredValid ||
     !usernameValid || !passwordValid || !confirmPasswordValid ||
     !sonarrApiKeyValid || !sonarrApiKeyValid ||
     !feedTitleValid || !feedThemeValid ||
@@ -97,6 +100,8 @@ function validateConfig() {
     address,
     applicationUrl,
     urlBase,
+    authenticationMethod,
+    authenticationRequired,
     username,
     password,
     sonarrBaseUrl,

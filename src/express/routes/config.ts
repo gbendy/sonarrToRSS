@@ -1,6 +1,6 @@
 import  { Router, Request, Response } from 'express';
 import { State } from '../../state';
-import { authenticated } from '../authentication';
+import { sessionAuthenticated } from '../authentication';
 import { noCache } from '../middleware';
 import { HealthTypes } from '../../utils';
 
@@ -22,7 +22,7 @@ export function handlebarOptions(state: State, req: Request) {
 export default function (state: State) {
   const router = Router();
 
-  router.get('/config', authenticated(state), noCache, (req: Request, res: Response) => {
+  router.get('/config', sessionAuthenticated(state), noCache, (req: Request, res: Response) => {
     res.render('config', handlebarOptions(state, req));
   });
   return router;

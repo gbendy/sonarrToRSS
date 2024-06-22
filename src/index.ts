@@ -31,6 +31,8 @@ const defaultConfig: Config = {
   discardResolvedHealthEvents: false,
   maxImageCacheSize: 50,
   logLevel: 'info',
+  authenticationMethod: 'forms',
+  authenticationRequired: 'enabled',
   sessionSecrets: [],
   configured: false
 };

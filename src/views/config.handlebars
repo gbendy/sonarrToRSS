@@ -33,8 +33,21 @@
       <event>
         <data>
           <detail>
-            <episode class="noseries">User</episode>
+            <episode class="noseries">Authentication</episode>
             <release>
+              <entry class="{{ifEqual config.authenticationMethod 'forms' 'collapse' ''}}"><span class="label">Method</span>
+                <select id ="authenticationMethod">
+                  <option {{ifEqual config.authenticationMethod 'forms' 'selected' ''}} value="forms">Forms (Login Page)</option>
+                  <option {{ifEqual config.authenticationMethod 'external' 'selected' ''}} value="external">External</option>
+                  <option {{ifEqual config.authenticationMethod 'externalExceptWebhook' 'selected' ''}} value="externalExceptWebhook">External (Authenticate Webhook)</option>
+                </select>
+              </entry>
+              <entry><span class="label">Required</span>
+                <select id ="authenticationRequired">
+                  <option {{ifEqual config.authenticationRequired 'enabled' 'selected' ''}} value="enabled">Enabled</option>
+                  <option {{ifEqual config.authenticationRequired 'disabledForLocalAddresses' 'selected' ''}} value="disabledForLocalAddresses">Disabled for Local Addresses</option>
+                </select>
+              </entry>
               <entry><span class="label">Username</span><input id="username" value="{{config.username}}" type="text"></entry>
               <entry class="tip"><span id="usernameMessage">* Like Sonarr itself Sonarr to RSS requires authentication.</span></entry>
               <entry><span class="label">Password</span><input id="password" type="password" placeholder="{{ifEqual config.configured true 'Enter new password to change' 'Enter password'}}"></entry>

@@ -1,6 +1,6 @@
 import  { Router, Request, Response } from 'express';
 import { State } from '../../state';
-import { authenticated } from '../authentication';
+import { sessionAuthenticated } from '../authentication';
 import { parseInteger } from '../../utils';
 
 function getBanner(state: State, seriesId: number, res: Response) {
@@ -17,7 +17,7 @@ export default function (state: State) {
   const router = Router();
   const helpers = state.handlebarsHelpers;
 
-  router.get('/', authenticated(state), (req: Request, res: Response) => {
+  router.get('/', sessionAuthenticated(state), (req: Request, res: Response) => {
     res.redirect(state.resolveUrlPath('browse'));
   });
 
@@ -38,7 +38,7 @@ export default function (state: State) {
   });
 
   // History browsing
-  router.get('/browse/:pageOrId?/:count?', authenticated(state), async (req: Request, res: Response) => {
+  router.get('/browse/:pageOrId?/:count?', sessionAuthenticated(state), async (req: Request, res: Response) => {
     // get and sanitise input parameters
     const totalEvents = state.history.length;
     const count = Math.max(parseInteger(req.params.count, 6), 1);
@@ -148,7 +148,7 @@ export default function (state: State) {
     }, req));
   });
 
-  router.get('/event/:eventId?', authenticated(state), async (req: Request, res: Response) => {
+  router.get('/event/:eventId?', sessionAuthenticated(state), async (req: Request, res: Response) => {
     const count = parseInteger(req.query.count as string, undefined);
     const ascending = req.query.sort === 'ascending';
 

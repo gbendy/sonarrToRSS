@@ -10,6 +10,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { State } from '../state';
 import { isErrorWithCode, randomString } from '../utils';
 import { forCategory } from '../logger';
+import { SRSSRequest } from '../types';
 
 const logger = forCategory('auth');
 
@@ -49,8 +50,8 @@ async function validateUserPassword(state: State, username: string, password: st
   }
 
 }
-export function use(state: State, app: Express) {
 
+export function use(state: State, app: Express) {
   app.set('trust proxy', 1);
   state.passportStrategies.local = randomString(12, 'p');
   passport.use(state.passportStrategies.local, new LocalStrategy(function (username, password, done) {
@@ -89,7 +90,8 @@ function jsonError(res: Response, error: unknown) {
     error
   });
 }
-export function localLogin(state: State) {
+
+export function performSiteLogin(state: State) {
   return [
     json(),
     passport.authenticate(state.passportStrategies.local, { failureMessage: true, failWithError: true, keepSessionInfo: true }),
@@ -113,13 +115,17 @@ export function localLogin(state: State) {
   ];
 }
 
-export function basicLogin(state: State) {
-  return [
-    urlencoded({ extended: false }),
-    passport.authenticate(state.passportStrategies.basic, {
-      session: false
-    })
-  ];
+export function basicAuthenticated(state: State) {
+  if (state.config.authenticationMethod === 'external') {
+    return [];
+  } else {
+    return [
+      urlencoded({ extended: false }),
+      passport.authenticate(state.passportStrategies.basic, {
+        session: false
+      })
+    ];
+  }
 }
 
 export async function updatePassword(state:State, password: string) {
@@ -139,17 +145,41 @@ export async function updatePassword(state:State, password: string) {
   }
 }
 
-export function authenticated(state: State): RequestHandler {
+function createSessionAuthenticator(state:State): RequestHandler {
+  function setupSession(req: Request) {
+    req.user = {
+      username: state.config.username
+    };
+  }
+  if (state.config.authenticationMethod === 'external' || state.config.authenticationMethod === 'externalExceptWebhook') {
+    return function(req, res, next) {
+      setupSession(req);
+      next();
+    };
+  } else {
+    const ensureFunction = ensureLoggedIn(state.resolveUrlPath('/login'));
+    return function(req, res, next) {
+      if (state.config.authenticationRequired === 'disabledForLocalAddresses' && (req as SRSSRequest).isLocalIpAddr) {
+        setupSession(req);
+        next();
+      } else {
+        ensureFunction(req, res, next);
+      }
+    };
+  }
+}
+
+export function sessionAuthenticated(state: State): RequestHandler {
   return state.config.configured ?
-    ensureLoggedIn(state.resolveUrlPath('/login')) :
+    createSessionAuthenticator(state) :
     function(req, res, next) { next(); };
 }
 
 export default {
   preStart,
   use,
-  authenticated,
-  localLogin,
-  httpLogin: basicLogin,
+  sessionAuthenticated,
+  basicAuthenticated,
+  performSiteLogin,
   updatePassword,
 };

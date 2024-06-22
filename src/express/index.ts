@@ -3,11 +3,12 @@ import { engine } from 'express-handlebars';
 import { State } from '../state';
 import { forCategory } from '../logger';
 import feed from '../feed';
-import { noCache } from './middleware';
+import { isLocalIp, noCache } from './middleware';
 import routes from './routes';
 import { handlebarOptions as configHandlebarOptions } from './routes/config';
 import authentication from './authentication';
 import serveFavicon from 'serve-favicon';
+import requestIp from 'request-ip';
 
 const logger = forCategory('server');
 
@@ -33,8 +34,14 @@ export async function start(state: State) {
       res.render('config', configHandlebarOptions(state, req));
     });
   } else {
-    authentication.use(state, app);
+    if (state.config.authenticationMethod !== 'external') {
+      authentication.use(state, app);
 
+      if (state.config.authenticationRequired === 'disabledForLocalAddresses') {
+        app.use(requestIp.mw());
+        app.use(isLocalIp);
+      }
+    }
     app.use(routes.auth(state));
     app.use(routes.browse(state));
     app.use(routes.config(state));
