@@ -1,4 +1,4 @@
-## Version 2024/03/31
+## Version 2024/06/21
 # make sure that your sonarrtorss container is named sonarrtorss
 # make sure that your dns has a cname set for sonarrtorss
 
@@ -43,43 +43,7 @@ server {
         proxy_pass $upstream_proto://$upstream_app:$upstream_port;
     }
 
-    location ~ /api {
-        include /config/nginx/proxy.conf;
-        include /config/nginx/resolver.conf;
-        set $upstream_app sonarrtorss;
-        set $upstream_port 18989;
-        set $upstream_proto http;
-        proxy_pass $upstream_proto://$upstream_app:$upstream_port;
-    }
-
-    location ~ /sonarr {
-        include /config/nginx/proxy.conf;
-        include /config/nginx/resolver.conf;
-        set $upstream_app sonarrtorss;
-        set $upstream_port 18989;
-        set $upstream_proto http;
-        proxy_pass $upstream_proto://$upstream_app:$upstream_port;
-    }
-
-    location ~ /rss {
-        include /config/nginx/proxy.conf;
-        include /config/nginx/resolver.conf;
-        set $upstream_app sonarrtorss;
-        set $upstream_port 18989;
-        set $upstream_proto http;
-        proxy_pass $upstream_proto://$upstream_app:$upstream_port;
-    }
-
-    location ~ /atom {
-        include /config/nginx/proxy.conf;
-        include /config/nginx/resolver.conf;
-        set $upstream_app sonarrtorss;
-        set $upstream_port 18989;
-        set $upstream_proto http;
-        proxy_pass $upstream_proto://$upstream_app:$upstream_port;
-    }
-
-    location ~ /json {
+    location ~ ^/(api/|sonarr$|rss$|atom$|json$) {
         include /config/nginx/proxy.conf;
         include /config/nginx/resolver.conf;
         set $upstream_app sonarrtorss;

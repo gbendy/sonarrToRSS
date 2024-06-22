@@ -53,8 +53,9 @@ Webhook Connection to send events to `http://localhost:18989/sonarr`. RSS feed i
   your Sonarr installation to add series banner images in events.
 - Light and dark themes.
 - Supports domain and subfolder based reverse proxies.
-  [SWAG](https://docs.linuxserver.io/general/swag "SWAG") configurations are available [here](swag
-  "Swag configuration files").
+  [SWAG](https://docs.linuxserver.io/general/swag "SWAG") version 2.11 and greater includes
+  configuration files for Sonarr to RSS. Alternatively, configuration files are available
+  [here](swag "Swag configuration files").
 - Configurable cooldown for Health events to suppress transient issues from the feed, or purge them
   from history entirely.
 
