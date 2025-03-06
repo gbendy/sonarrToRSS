@@ -1,6 +1,6 @@
-# <img width="24px" src="./img/sonarrToRSS.png" alt="Sonarr To RSS"></img> Sonarr To RSS
+# <img width="24px" src="./img/sonarrToRSS.png" alt="Sonarr to RSS"></img> Sonarr to RSS
 
-Sonarr To RSS is a [Sonarr](https://sonarr.tv/ "Sonarr") Webhook connection endpoint that streams
+Sonarr to RSS is a [Sonarr](https://sonarr.tv/ "Sonarr") Webhook connection endpoint that streams
 events to RSS/Atom/JSON feeds and provides a paginated website to browse historical events.
 
 #### Light mode
@@ -62,7 +62,7 @@ Webhook Connection to send events to `http://localhost:18989/sonarr`. RSS feed i
 ### Authentication
 
 Sonarr to RSS requires authentication for both the browser interface and the Sonarr webhook
-endpoint. Feed endpoints are not authenticated and there is now way to enable this.
+endpoint. Feed endpoints are not authenticated and there is no way to enable this.
 
 #### Local Access
 

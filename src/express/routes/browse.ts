@@ -22,8 +22,8 @@ export default function (state: State) {
   });
 
   // get series banner image
-  router.get('/banner/:seriesId', (req: Request, res: Response ) => {
-    if (!state.sonarrApi) {
+  router.get('/banner/:seriesId', async (req: Request, res: Response ) => {
+    if (!await state.ensureSonarrApi()) {
       res.statusCode = 500;
       res.end();
       return;

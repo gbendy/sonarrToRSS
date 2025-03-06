@@ -44,7 +44,8 @@ export class ImageCache {
       this.#cachedImages.set(imageId, cached);
       return;
     }
-    if (!this.#state.sonarrApi) {
+    const api = await this.#state.ensureSonarrApi();
+    if (!api) {
       // no API and we don't have the image. Just 500 it.
       res.statusCode = 500;
       res.end();
@@ -62,7 +63,7 @@ export class ImageCache {
     if (!cached.getting) {
       cached.getting = true;
       try {
-        const result = await this.#state.sonarrApi.getBuffer(`mediacover/${series.id}/${filename}`);
+        const result = await api.getBuffer(`mediacover/${series.id}/${filename}`);
         cached.getting = false;
 
         for (const waitingRes of cached.waiting) {
@@ -80,7 +81,7 @@ export class ImageCache {
 
           // remove images in cache in LRU order until below max size
           while (this.#currentSize > maxCacheSize && this.#cachedImages.size) {
-            const key = this.#cachedImages.keys().next().value;
+            const key = this.#cachedImages.keys().next().value as string; // the size check above guarantees there are keys so the iterator will have a string value
             const dropping = this.#cachedImages.get(key) as ImageStore;
             logger.debug(`Cache overflow ${this.#currentSize}/${maxCacheSize} when storing ${imageId} (${result.buffer.byteLength}). Dropping ${key} (${dropping.image?.byteLength})`);
             // we know that key exists and that it has a buffer
@@ -96,6 +97,7 @@ export class ImageCache {
           waitingRes.end();
         }
         cached.waiting.length = 0;
+        cached.getting = false;
       }
     }
   }
