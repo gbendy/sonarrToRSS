@@ -43,7 +43,7 @@ export class State {
   server!: Server;
   passportStrategies: { local: string, basic: string };
   hostConfig?: HostConfigResource;
-  sonarrApi?: SonarrApi;
+  sonarrApi: SonarrApi | undefined;
   pingId!: string;
   imageCache: ImageCache;
 
@@ -112,6 +112,7 @@ export class State {
         this.sonarrApi = undefined;
       }
     }
+    return this.sonarrApi;
   }
 
   #loadHistory() {
@@ -158,8 +159,8 @@ export class State {
    * @returns
    */
   async ensureSeries(seriesIds: Set<number>) {
-    await this.ensureSonarrApi();
-    if (!this.sonarrApi) {
+    const api = await this.ensureSonarrApi();
+    if (!api) {
       return;
     }
     if (seriesIds.size) {
@@ -169,8 +170,9 @@ export class State {
           continue;
         }
         if (!this.queuedSeriesData.has(seriesId)) {
-          this.queuedSeriesData.set(seriesId, this.sonarrApi.getJson<SeriesResource>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
+          this.queuedSeriesData.set(seriesId, api.getJson<SeriesResource>(`series/${seriesId}?includeSeasonImages=true`).then(data => {
             this.seriesData.set(seriesId, data);
+          }).finally(() => {
             this.queuedSeriesData.delete(seriesId);
           }));
         }
