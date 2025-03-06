@@ -125,7 +125,10 @@ force you to set a new password.
 
 ## Releases
 
-### 1.0.2 (22/6/24) [Changelog](CHANGELOG.md)
+### 1.0.3 (6/3/25) [Changelog](CHANGELOG.md)
+
+1.0.2 (22/6/24)
+[Changelog](https://github.com/gbendy/sonarrToRSS/blob/a376ca29aa9366255da779301266a8fef251c2ef/CHANGELOG.md)
 
 1.0.1 (11/4/24)
 [Changelog](https://github.com/gbendy/sonarrToRSS/blob/b89592ffed29850fa7e08fe7d6ec087d3c48ccfa/CHANGELOG.md)

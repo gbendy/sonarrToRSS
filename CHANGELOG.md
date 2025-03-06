@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.0.3 - 2025-03-06
+
+### Bug fixes
+
+Fixed issue where if Sonarr was not connectable at startup then no Sonarr API requests would
+succeed even if Sonarr became connectable at a later time.
+
 ## 1.0.2 - 2024-06-22
 
 ### New Features
